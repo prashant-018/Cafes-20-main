@@ -2,8 +2,12 @@ import { Router } from 'express';
 import { body } from 'express-validator';
 import { register, login, getMe, adminLogin } from '../controllers/auth.controller';
 import { protect } from '../middleware/auth.middleware';
+import { checkDatabaseConnection } from '../middleware/dbCheck';
 
 const router = Router();
+
+// Apply database check to all auth routes
+router.use(checkDatabaseConnection);
 
 // Validation rules
 const registerValidation = [

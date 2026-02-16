@@ -12,7 +12,9 @@
     "install-deps": "node install.js",
     "seed:admin": "ts-node src/scripts/seedAdmin.ts",
     "db:seed": "npm run seed:admin",
-    "db:init": "ts-node src/scripts/initDatabase.ts"
+    "db:init": "ts-node src/scripts/initDatabase.ts",
+    "test:auth": "ts-node src/scripts/testAuth.ts",
+    "test:jwt": "ts-node src/scripts/testJWT.ts"
   },
   "keywords": [
     "express",

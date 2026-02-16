@@ -61,3 +61,7 @@ coverage
 ehthumbs.db
 Thumbs.db
 Desktop.ini
+
+# Keep public folder and its contents
+!public/
+!public/**/*

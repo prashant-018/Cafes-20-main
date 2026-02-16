@@ -124,8 +124,16 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    console.log('✅ User found:', {
+      id: user._id,
+      email: user.email,
+      hasPassword: !!user.password,
+      passwordLength: user.password?.length
+    });
+
     // Check password
     const isPasswordValid = await user.comparePassword(password);
+    console.log('🔑 Password comparison result:', isPasswordValid);
 
     if (!isPasswordValid) {
       console.log('❌ Invalid password for:', email);
@@ -157,9 +165,17 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   } catch (error) {
     console.error('❌ Login error:', error);
 
+    // Log detailed error for debugging
+    if (error instanceof Error) {
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+
     res.status(500).json({
       success: false,
-      message: 'Internal server error during login'
+      message: 'Internal server error during login',
+      error: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : 'Unknown error') : undefined
     });
   }
 };
@@ -222,9 +238,17 @@ export const adminLogin = async (req: Request, res: Response): Promise<void> => 
   } catch (error) {
     console.error('❌ Admin login error:', error);
 
+    // Log detailed error for debugging
+    if (error instanceof Error) {
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+
     res.status(500).json({
       success: false,
-      message: 'Internal server error during admin login'
+      message: 'Internal server error during admin login',
+      error: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : 'Unknown error') : undefined
     });
   }
 };

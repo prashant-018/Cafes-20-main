@@ -8,6 +8,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import connectDB from './config/database';
 import { errorHandler, notFound } from './middleware/errorHandler';
+import { validateEnvironmentOrExit } from './utils/validateEnv';
 
 // Import routes
 import authRoutes from './routes/auth.routes';
@@ -174,7 +175,10 @@ const PORT = process.env.PORT || 5000;
 // Start server function
 const startServer = async () => {
   try {
-    // Connect to MongoDB FIRST
+    // Validate environment variables FIRST (will exit if invalid)
+    validateEnvironmentOrExit();
+
+    // Connect to MongoDB
     await connectDB();
 
     // Then start the server
@@ -202,6 +206,12 @@ const startServer = async () => {
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);
+
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+    }
+
+    console.error('\n💡 Please fix the configuration errors above and restart the server.\n');
     process.exit(1);
   }
 };
