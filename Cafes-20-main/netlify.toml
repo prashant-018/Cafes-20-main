@@ -1,0 +1,21 @@
+# Netlify Configuration for Monorepo
+[build]
+  # Build from ROOT directory (where package.json with Vite is located)
+  base = "."
+  
+  # Build command
+  command = "npm run build:client"
+  
+  # Publish directory (relative to base)
+  publish = "dist"
+
+# Environment variables
+[build.environment]
+  NODE_VERSION = "22"
+  NPM_FLAGS = "--legacy-peer-deps"
+
+# Redirect rules (optional - for SPA routing)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
