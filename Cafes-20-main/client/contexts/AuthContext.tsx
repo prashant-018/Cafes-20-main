@@ -43,7 +43,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         // Check for admin token first, then user token
         const adminToken = localStorage.getItem('adminToken');
-        const adminToken = localStorage.getItem('adminToken');
         const userToken = localStorage.getItem('userToken');
         const storedToken = adminToken || userToken;
 
@@ -60,3 +59,75 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             console.log('✅ Auth restored from localStorage:', parsedUser.email);
           } else {
             // Token exists but no user data - clear everything
+            localStorage.clear();
+            console.log('⚠️ Cleared invalid auth state');
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error loading auth state:', error);
+        localStorage.clear();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initAuth();
+  }, []);
+
+  const login = async (email: string, password: string, isAdmin = false) => {
+    try {
+      const endpoint = isAdmin ? '/auth/admin/login' : '/auth/login';
+      const response = await apiService.post(endpoint, { email, password });
+
+      const { token: newToken, user: newUser } = response.data;
+
+      setUser(newUser);
+      setToken(newToken);
+
+      // Store in localStorage
+      if (isAdmin) {
+        localStorage.setItem('adminToken', newToken);
+        localStorage.setItem('admin', JSON.stringify(newUser));
+      } else {
+        localStorage.setItem('userToken', newToken);
+        localStorage.setItem('user', JSON.stringify(newUser));
+      }
+
+      console.log('✅ Login successful:', newUser.email);
+    } catch (error: any) {
+      console.error('❌ Login failed:', error);
+      throw new Error(error.response?.data?.message || 'Login failed');
+    }
+  };
+
+  const logout = (isAdmin = false) => {
+    setUser(null);
+    setToken(null);
+
+    if (isAdmin) {
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('admin');
+    } else {
+      localStorage.removeItem('userToken');
+      localStorage.removeItem('user');
+    }
+
+    console.log('✅ Logout successful');
+  };
+
+  const checkAuth = (): boolean => {
+    return !!user && !!token;
+  };
+
+  const value: AuthContextType = {
+    user,
+    token,
+    isAuthenticated: !!user && !!token,
+    isLoading,
+    login,
+    logout,
+    checkAuth,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
