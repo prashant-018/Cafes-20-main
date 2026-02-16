@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CORS Test - Admin Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+
+    .test-section {
+      margin: 20px 0;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .success {
+      background-color: #d4edda;
+      border-color: #c3e6cb;
+      color: #155724;
+    }
+
+    .error {
+      background-color: #f8d7da;
+      border-color: #f5c6cb;
+      color: #721c24;
+    }
+
+    .info {
+      background-color: #d1ecf1;
+      border-color: #bee5eb;
+      color: #0c5460;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
+    }
+
+    input {
+      padding: 8px;
+      margin: 5px;
+      width: 200px;
+    }
+
+    pre {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 3px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>🧪 CORS Fix Test - Admin Login</h1>
+
+  <div class="test-section info">
+    <h3>Test Configuration</h3>
+    <p><strong>Frontend Origin:</strong> <span id="origin"></span></p>
+    <p><strong>Backend URL:</strong> http://localhost:5000</p>
+    <p><strong>Login Endpoint:</strong> /api/auth/login</p>
+  </div>
+
+  <div class="test-section">
+    <h3>1. Health Check Test</h3>
+    <button onclick="testHealthCheck()">Test Health Check</button>
+    <div id="health-result"></div>
+  </div>
+
+  <div class="test-section">
+    <h3>2. Admin Login Test</h3>
+    <div>
+      <input type="email" id="email" placeholder="Email" value="admin@himalayan-pizza.com">
+      <input type="password" id="password" placeholder="Password" value="admin123456">
+    </div>
+    <button onclick="testAdminLogin()">Test Admin Login</button>
+    <div id="login-result"></div>
+  </div>
+
+  <div class="test-section">
+    <h3>3. Menu API Test (Public)</h3>
+    <button onclick="testMenuAPI()">Test Menu API</button>
+    <div id="menu-result"></div>
+  </div>
+
+  <script>
+    // Display current origin
+    document.getElementById('origin').textContent = window.location.origin;
+
+    async function testHealthCheck() {
+      const resultDiv = document.getElementById('health-result');
+      resultDiv.innerHTML = '<p>Testing...</p>';
+
+      try {
+        const response = await fetch('http://localhost:5000/api/health', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Health Check Success</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+        } else {
+          resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Health Check Failed</h4>
+                            <p>Status: ${response.status}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Health Check Error</h4>
+                        <p>${error.message}</p>
+                        <p><strong>Common causes:</strong></p>
+                        <ul>
+                            <li>Backend server not running</li>
+                            <li>CORS policy blocking request</li>
+                            <li>Network connectivity issue</li>
+                        </ul>
+                    </div>
+                `;
+      }
+    }
+
+    async function testAdminLogin() {
+      const resultDiv = document.getElementById('login-result');
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      resultDiv.innerHTML = '<p>Testing login...</p>';
+
+      try {
+        const response = await fetch('http://localhost:5000/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Admin Login Success</h4>
+                            <p><strong>Admin:</strong> ${data.data.admin.name} (${data.data.admin.email})</p>
+                            <p><strong>Role:</strong> ${data.data.admin.role}</p>
+                            <p><strong>Token:</strong> ${data.data.token.substring(0, 20)}...</p>
+                        </div>
+                    `;
+        } else {
+          resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Admin Login Failed</h4>
+                            <p>Status: ${response.status}</p>
+                            <p>Message: ${data.message || 'Unknown error'}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Admin Login Error</h4>
+                        <p>${error.message}</p>
+                        <p><strong>Possible issues:</strong></p>
+                        <ul>
+                            <li>CORS policy blocking request</li>
+                            <li>Wrong API endpoint</li>
+                            <li>Backend server not running</li>
+                            <li>Admin user not created (run: npm run db:seed)</li>
+                        </ul>
+                    </div>
+                `;
+      }
+    }
+
+    async function testMenuAPI() {
+      const resultDiv = document.getElementById('menu-result');
+      resultDiv.innerHTML = '<p>Testing menu API...</p>';
+
+      try {
+        const response = await fetch('http://localhost:5000/api/menu', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Menu API Success</h4>
+                            <p><strong>Menu Items:</strong> ${data.count || 0}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+        } else {
+          resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Menu API Failed</h4>
+                            <p>Status: ${response.status}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Menu API Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+      }
+    }
+
+    // Auto-run health check on page load
+    window.onload = function () {
+      testHealthCheck();
+    };
+  </script>
+</body>
+
+</html>
