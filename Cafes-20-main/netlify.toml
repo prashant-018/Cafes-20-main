@@ -1,48 +1,11 @@
-# =========================
-# Netlify Configuration for Monorepo
-# =========================
-# CRITICAL: This file MUST be in the repository root
-# Netlify dashboard settings will be IGNORED if this file exists
-
+# Netlify Configuration
 [build]
-  # Base directory: ROOT (where package.json with Vite is located)
-  # DO NOT set to "client" - that's where the error comes from
-  base = "."
-  
-  # Build command: Use pnpm (matches local development)
-  # --frozen-lockfile ensures reproducible builds
-  command = "pnpm install --frozen-lockfile && pnpm run build:client"
-  
-  # Publish directory: Vite outputs to dist/spa (from vite.config.ts)
-  # Path is relative to base directory
-  publish = "dist/spa"
-  
-  # Ignore builds for server changes only
-  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- server/"
+  base = "client"
+  command = "npm run build"
+  publish = "dist"
 
-# Environment variables
-[build.environment]
-  NODE_VERSION = "22"
-  # Specify pnpm version (must match package.json packageManager field)
-  PNPM_VERSION = "10.14.0"
-  # Enable pnpm in Netlify
-  NPM_FLAGS = "--legacy-peer-deps"
-
-# SPA routing: Redirect all routes to index.html
+# SPA routing - redirect all routes to index.html
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-
-# Headers for security and performance
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    
-[[headers]]
-  for = "/assets/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
