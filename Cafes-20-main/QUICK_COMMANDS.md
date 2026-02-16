@@ -2,10 +2,16 @@
 
 Copy and paste these commands in order. Replace `YOUR_GITHUB_URL` with your actual repository URL.
 
-## Step 1: Copy Configuration Files
+## Step 1: Clean Up and Copy Configuration Files
 
 ```cmd
 cd Cafes-20-main
+
+REM Delete root lock files (optional - keeps root clean)
+del pnpm-lock.yaml
+del package-lock.json
+
+REM Copy configuration files to client
 copy tailwind.config.ts client\
 copy postcss.config.js client\
 copy tsconfig.json client\
