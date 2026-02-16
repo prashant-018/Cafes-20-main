@@ -48,9 +48,6 @@ setSocketIO(io);
 setMenuLocalSocketIO(io);
 setSettingsSocketIO(io);
 
-// Connect to MongoDB
-connectDB();
-
 // Security middleware - NO CSP in development
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
@@ -95,6 +92,37 @@ app.get('/api/health', (req, res) => {
     message: 'The Himalayan Pizza API is running',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Root endpoint - Welcome message
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: '🍕 Welcome to The Himalayan Pizza API',
+    version: '1.0.0',
+    status: 'Server is running',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'production',
+    endpoints: {
+      health: '/api/health',
+      auth: {
+        login: 'POST /api/auth/login',
+        adminLogin: 'POST /api/auth/admin/login',
+        register: 'POST /api/auth/register'
+      },
+      settings: {
+        get: 'GET /api/settings',
+        update: 'PUT /api/settings (Admin only)'
+      },
+      menu: {
+        getImages: 'GET /api/menu-simple',
+        uploadImages: 'POST /api/menu-simple/upload (Admin only)',
+        deleteImage: 'DELETE /api/menu-simple/:id (Admin only)'
+      }
+    },
+    documentation: 'https://github.com/your-repo/api-docs',
+    support: 'Contact: admin@himalayan-pizza.com'
   });
 });
 
@@ -143,8 +171,15 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-server.listen(PORT, () => {
-  console.log(`
+// Start server function
+const startServer = async () => {
+  try {
+    // Connect to MongoDB FIRST
+    await connectDB();
+
+    // Then start the server
+    server.listen(PORT, () => {
+      console.log(`
 ╔════════════════════════════════════════════════════════╗
 ║                                                        ║
 ║   🍕 The Himalayan Pizza - Backend API                ║
@@ -163,8 +198,16 @@ server.listen(PORT, () => {
 ║   • GET  /api/health                                   ║
 ║                                                        ║
 ╚════════════════════════════════════════════════════════╝
-  `);
-});
+      `);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+// Start the server
+startServer();
 
 // Graceful shutdown
 process.on('SIGTERM', () => {

@@ -11,7 +11,8 @@
     "type-check": "tsc --noEmit",
     "install-deps": "node install.js",
     "seed:admin": "ts-node src/scripts/seedAdmin.ts",
-    "db:seed": "npm run seed:admin"
+    "db:seed": "npm run seed:admin",
+    "db:init": "ts-node src/scripts/initDatabase.ts"
   },
   "keywords": [
     "express",
