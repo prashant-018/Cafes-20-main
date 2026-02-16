@@ -9,8 +9,9 @@
   # DO NOT set to "client" - that's where the error comes from
   base = "."
   
-  # Build command: Use the script from ROOT package.json
-  command = "npm ci && npm run build:client"
+  # Build command: Use pnpm (matches local development)
+  # --frozen-lockfile ensures reproducible builds
+  command = "pnpm install --frozen-lockfile && pnpm run build:client"
   
   # Publish directory: Vite outputs to dist/spa (from vite.config.ts)
   # Path is relative to base directory
@@ -22,10 +23,10 @@
 # Environment variables
 [build.environment]
   NODE_VERSION = "22"
-  # Use npm ci for faster, more reliable installs
+  # Specify pnpm version (must match package.json packageManager field)
+  PNPM_VERSION = "10.14.0"
+  # Enable pnpm in Netlify
   NPM_FLAGS = "--legacy-peer-deps"
-  # Ensure devDependencies are installed (they are by default, but explicit is better)
-  NODE_ENV = "development"
 
 # SPA routing: Redirect all routes to index.html
 [[redirects]]
