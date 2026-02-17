@@ -67,6 +67,7 @@ export default function AdminDashboard() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Use the menu images hook for real-time updates
   const {
@@ -370,31 +371,56 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex">
+    <div className="min-h-screen bg-[#0a0a0a] flex overflow-x-hidden">
       {/* API Debug Component */}
       <ApiTest />
 
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <div className="w-64 bg-[#111111] border-r border-gray-800 flex flex-col">
+      <aside
+        className={`
+          fixed lg:static inset-y-0 left-0 z-50
+          w-64 bg-[#111111] border-r border-gray-800 
+          flex flex-col
+          transform transition-transform duration-300 ease-in-out
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}
+      >
         {/* Logo */}
         <div className="p-6 border-b border-gray-800">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg overflow-hidden border-2 border-red-600/20">
-              <img
-                src="/the himalya image.jpg"
-                alt="Himalayan Pizza Logo"
-                className="w-full h-full object-cover"
-              />
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-lg overflow-hidden border-2 border-red-600/20 flex-shrink-0">
+                <img
+                  src="/the himalya image.jpg"
+                  alt="Himalayan Pizza Logo"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-white font-semibold text-lg truncate">Himalayan Pizza</h1>
+                <p className="text-gray-400 text-sm truncate">Admin Panel</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-white font-semibold text-lg">Himalayan Pizza</h1>
-              <p className="text-gray-400 text-sm">Admin Panel</p>
-            </div>
+            {/* Close button for mobile */}
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden text-gray-400 hover:text-white p-2"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4">
+        <nav className="flex-1 p-4 overflow-y-auto">
           <div className="space-y-2">
             {navigationItems.map((item) => {
               const Icon = item.icon;
@@ -403,17 +429,20 @@ export default function AdminDashboard() {
               return (
                 <button
                   key={item.id}
-                  onClick={() => setActiveSection(item.id as ActiveSection)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all duration-300 group ${isActive
+                  onClick={() => {
+                    setActiveSection(item.id as ActiveSection);
+                    setSidebarOpen(false); // Close sidebar on mobile after selection
+                  }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all duration-300 group min-w-0 ${isActive
                     ? 'bg-red-600/10 text-red-400 border border-red-600/20'
                     : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
                     }`}
                 >
-                  <Icon className={`w-5 h-5 transition-all duration-300 ${isActive
+                  <Icon className={`w-5 h-5 flex-shrink-0 transition-all duration-300 ${isActive
                     ? 'text-red-400 drop-shadow-[0_0_6px_rgba(239,68,68,0.8)]'
                     : 'text-gray-400 group-hover:text-white group-hover:drop-shadow-[0_0_4px_rgba(255,255,255,0.3)]'
                     }`} />
-                  <span className="font-medium">{item.label}</span>
+                  <span className="font-medium truncate">{item.label}</span>
                 </button>
               );
             })}
@@ -422,13 +451,13 @@ export default function AdminDashboard() {
 
         {/* User Profile & Logout */}
         <div className="p-4 border-t border-gray-800">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
+          <div className="flex items-center gap-3 mb-4 min-w-0">
+            <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center flex-shrink-0">
               <User className="w-5 h-5 text-gray-300" />
             </div>
-            <div>
-              <p className="text-white font-medium">Admin</p>
-              <p className="text-gray-400 text-sm">Restaurant Owner</p>
+            <div className="min-w-0">
+              <p className="text-white font-medium truncate">Admin</p>
+              <p className="text-gray-400 text-sm truncate">Restaurant Owner</p>
             </div>
           </div>
           <Button
@@ -436,31 +465,39 @@ export default function AdminDashboard() {
             onClick={handleLogout}
             className="w-full justify-start text-gray-400 hover:text-red-400 hover:bg-red-600/10"
           >
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
+            <LogOut className="w-4 h-4 mr-2 flex-shrink-0" />
+            <span className="truncate">Logout</span>
           </Button>
         </div>
-      </div>
+      </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Top Header */}
-        <header className="bg-[#111111] border-b border-gray-800 px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-semibold text-white capitalize">
+        <header className="bg-[#111111] border-b border-gray-800 px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between gap-4">
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden text-gray-400 hover:text-white p-2 -ml-2"
+            >
+              <MenuIcon className="w-6 h-6" />
+            </button>
+
+            <div className="min-w-0 flex-1">
+              <h2 className="text-xl sm:text-2xl font-semibold text-white capitalize truncate">
                 {activeSection === 'dashboard' ? 'Dashboard Overview' :
                   activeSection === 'business' ? 'Business Settings' :
                     activeSection === 'menu' ? 'Menu Management' : 'Offers & Promotions'}
               </h2>
-              <p className="text-gray-400 mt-1">
+              <p className="text-gray-400 mt-1 text-sm sm:text-base hidden sm:block">
                 {activeSection === 'dashboard' ? 'Monitor your restaurant performance' :
                   activeSection === 'business' ? 'Manage your business information' :
                     activeSection === 'menu' ? 'Update your menu and pricing' : 'Create and manage special offers'}
               </p>
             </div>
-            <div className="flex items-center gap-4">
-              <Badge variant={getCurrentStatus() ? "default" : "secondary"} className={getCurrentStatus() ? "bg-green-600 text-white" : "bg-gray-600 text-gray-200"}>
+            <div className="flex items-center gap-4 flex-shrink-0">
+              <Badge variant={getCurrentStatus() ? "default" : "secondary"} className={`${getCurrentStatus() ? "bg-green-600 text-white" : "bg-gray-600 text-gray-200"} whitespace-nowrap`}>
                 {getCurrentStatus() ? 'Open' : 'Closed'}
               </Badge>
             </div>
@@ -468,7 +505,7 @@ export default function AdminDashboard() {
         </header>
 
         {/* Content Area */}
-        <main className="flex-1 p-8 overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto overflow-x-hidden">
           {/* Success/Error Toast */}
           <AnimatePresence>
             {message && (
@@ -476,17 +513,17 @@ export default function AdminDashboard() {
                 initial={{ opacity: 0, y: -50, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -50, scale: 0.95 }}
-                className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg border flex items-center gap-3 min-w-[300px] ${message.type === 'success'
+                className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg border flex items-center gap-3 max-w-[calc(100vw-2rem)] sm:min-w-[300px] ${message.type === 'success'
                   ? 'bg-green-900/90 text-green-100 border-green-700 backdrop-blur-sm'
                   : 'bg-red-900/90 text-red-100 border-red-700 backdrop-blur-sm'
                   }`}
               >
                 {message.type === 'success' ? (
-                  <CheckCircle className="w-5 h-5 text-green-400" />
+                  <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
                 ) : (
-                  <AlertCircle className="w-5 h-5 text-red-400" />
+                  <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
                 )}
-                <span className="font-medium">{message.text}</span>
+                <span className="font-medium break-words">{message.text}</span>
               </motion.div>
             )}
           </AnimatePresence>
@@ -499,46 +536,46 @@ export default function AdminDashboard() {
               className="space-y-6"
             >
               {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 <Card className="bg-[#111111] border-gray-800">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-gray-400 text-sm font-medium">Restaurant Status</p>
-                        <p className="text-2xl font-bold text-white mt-1">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-gray-400 text-xs sm:text-sm font-medium">Restaurant Status</p>
+                        <p className="text-xl sm:text-2xl font-bold text-white mt-1 truncate">
                           {getCurrentStatus() ? 'Open' : 'Closed'}
                         </p>
                       </div>
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 group ${getCurrentStatus() ? 'bg-green-600/20 hover:bg-green-600/30' : 'bg-gray-600/20 hover:bg-gray-600/30'}`}>
-                        <Clock className={`w-6 h-6 transition-all duration-300 ${getCurrentStatus() ? 'text-green-400 group-hover:text-green-300 group-hover:drop-shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'text-gray-300 group-hover:text-gray-200 group-hover:drop-shadow-[0_0_8px_rgba(156,163,175,0.4)]'}`} />
+                      <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all duration-300 group flex-shrink-0 ${getCurrentStatus() ? 'bg-green-600/20 hover:bg-green-600/30' : 'bg-gray-600/20 hover:bg-gray-600/30'}`}>
+                        <Clock className={`w-5 h-5 sm:w-6 sm:h-6 transition-all duration-300 ${getCurrentStatus() ? 'text-green-400 group-hover:text-green-300 group-hover:drop-shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'text-gray-300 group-hover:text-gray-200 group-hover:drop-shadow-[0_0_8px_rgba(156,163,175,0.4)]'}`} />
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
                 <Card className="bg-[#111111] border-gray-800">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-gray-400 text-sm font-medium">Contact Number</p>
-                        <p className="text-2xl font-bold text-white mt-1">{adminData.phoneNumber}</p>
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-gray-400 text-xs sm:text-sm font-medium">Contact Number</p>
+                        <p className="text-xl sm:text-2xl font-bold text-white mt-1 truncate">{adminData.phoneNumber}</p>
                       </div>
-                      <div className="w-12 h-12 rounded-full bg-blue-600/20 hover:bg-blue-600/30 flex items-center justify-center transition-all duration-300 group">
-                        <MessageCircle className="w-6 h-6 text-gray-300 group-hover:text-blue-300 group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.6)] transition-all duration-300" />
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-600/20 hover:bg-blue-600/30 flex items-center justify-center transition-all duration-300 group flex-shrink-0">
+                        <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-gray-300 group-hover:text-blue-300 group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.6)] transition-all duration-300" />
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
                 <Card className="bg-[#111111] border-gray-800">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-gray-400 text-sm font-medium">Business Hours</p>
-                        <p className="text-2xl font-bold text-white mt-1">{adminData.openingTime} - {adminData.closingTime}</p>
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-gray-400 text-xs sm:text-sm font-medium">Business Hours</p>
+                        <p className="text-xl sm:text-2xl font-bold text-white mt-1 truncate">{adminData.openingTime} - {adminData.closingTime}</p>
                       </div>
-                      <div className="w-12 h-12 rounded-full bg-purple-600/20 hover:bg-purple-600/30 flex items-center justify-center transition-all duration-300 group">
-                        <Clock className="w-6 h-6 text-gray-300 group-hover:text-purple-300 group-hover:drop-shadow-[0_0_8px_rgba(147,51,234,0.6)] transition-all duration-300" />
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-purple-600/20 hover:bg-purple-600/30 flex items-center justify-center transition-all duration-300 group flex-shrink-0">
+                        <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-gray-300 group-hover:text-purple-300 group-hover:drop-shadow-[0_0_8px_rgba(147,51,234,0.6)] transition-all duration-300" />
                       </div>
                     </div>
                   </CardContent>
@@ -554,38 +591,38 @@ export default function AdminDashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                     <Button
                       onClick={() => setActiveSection('business')}
                       variant="outline"
-                      className="h-20 flex-col gap-2 border-gray-700 hover:border-red-600/50 hover:bg-red-600/5 group transition-all duration-300"
+                      className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 border-gray-700 hover:border-red-600/50 hover:bg-red-600/5 group transition-all duration-300"
                     >
-                      <Settings className="w-6 h-6 text-gray-400 group-hover:text-red-400 group-hover:drop-shadow-[0_0_6px_rgba(239,68,68,0.6)] transition-all duration-300" />
-                      <span className="text-gray-300 group-hover:text-white transition-colors duration-300">Business Settings</span>
+                      <Settings className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 group-hover:text-red-400 group-hover:drop-shadow-[0_0_6px_rgba(239,68,68,0.6)] transition-all duration-300" />
+                      <span className="text-xs sm:text-sm text-gray-300 group-hover:text-white transition-colors duration-300 text-center">Business Settings</span>
                     </Button>
                     <Button
                       onClick={() => setActiveSection('menu')}
                       variant="outline"
-                      className="h-20 flex-col gap-2 border-gray-700 hover:border-red-600/50 hover:bg-red-600/5 group transition-all duration-300"
+                      className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 border-gray-700 hover:border-red-600/50 hover:bg-red-600/5 group transition-all duration-300"
                     >
-                      <MenuIcon className="w-6 h-6 text-gray-400 group-hover:text-red-400 group-hover:drop-shadow-[0_0_6px_rgba(239,68,68,0.6)] transition-all duration-300" />
-                      <span className="text-gray-300 group-hover:text-white transition-colors duration-300">Update Menu</span>
+                      <MenuIcon className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 group-hover:text-red-400 group-hover:drop-shadow-[0_0_6px_rgba(239,68,68,0.6)] transition-all duration-300" />
+                      <span className="text-xs sm:text-sm text-gray-300 group-hover:text-white transition-colors duration-300 text-center">Update Menu</span>
                     </Button>
                     <Button
                       onClick={() => setActiveSection('offers')}
                       variant="outline"
-                      className="h-20 flex-col gap-2 border-gray-700 hover:border-red-600/50 hover:bg-red-600/5 group transition-all duration-300"
+                      className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 border-gray-700 hover:border-red-600/50 hover:bg-red-600/5 group transition-all duration-300"
                     >
-                      <Tag className="w-6 h-6 text-gray-400 group-hover:text-red-400 group-hover:drop-shadow-[0_0_6px_rgba(239,68,68,0.6)] transition-all duration-300" />
-                      <span className="text-gray-300 group-hover:text-white transition-colors duration-300">Manage Offers</span>
+                      <Tag className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 group-hover:text-red-400 group-hover:drop-shadow-[0_0_6px_rgba(239,68,68,0.6)] transition-all duration-300" />
+                      <span className="text-xs sm:text-sm text-gray-300 group-hover:text-white transition-colors duration-300 text-center">Manage Offers</span>
                     </Button>
                     <Button
                       onClick={() => window.open('https://wa.me/' + adminData.phoneNumber.replace('+', ''), '_blank')}
                       variant="outline"
-                      className="h-20 flex-col gap-2 border-gray-700 hover:border-green-600/50 hover:bg-green-600/5 group transition-all duration-300"
+                      className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 border-gray-700 hover:border-green-600/50 hover:bg-green-600/5 group transition-all duration-300"
                     >
-                      <MessageCircle className="w-6 h-6 text-gray-400 group-hover:text-green-400 group-hover:drop-shadow-[0_0_6px_rgba(34,197,94,0.6)] transition-all duration-300" />
-                      <span className="text-gray-300 group-hover:text-white transition-colors duration-300">WhatsApp</span>
+                      <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 group-hover:text-green-400 group-hover:drop-shadow-[0_0_6px_rgba(34,197,94,0.6)] transition-all duration-300" />
+                      <span className="text-xs sm:text-sm text-gray-300 group-hover:text-white transition-colors duration-300 text-center">WhatsApp</span>
                     </Button>
                   </div>
                 </CardContent>
@@ -1092,6 +1129,6 @@ export default function AdminDashboard() {
           )}
         </main>
       </div>
-    </div>
+    </div >
   );
 }

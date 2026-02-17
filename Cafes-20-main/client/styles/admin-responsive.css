@@ -1,0 +1,284 @@
+/* Admin Dashboard Responsive Styles */
+
+/* Base styles - prevent horizontal scroll */
+.admin-dashboard {
+  overflow-x: hidden;
+  min-width: 0;
+}
+
+/* Sidebar responsive styles */
+.admin-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 256px;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-in-out;
+  z-index: 50;
+}
+
+.admin-sidebar.open {
+  transform: translateX(0);
+}
+
+/* Desktop: sidebar always visible */
+@media (min-width: 1024px) {
+  .admin-sidebar {
+    position: static;
+    transform: translateX(0);
+  }
+}
+
+/* Main content responsive */
+.admin-main-content {
+  min-width: 0;
+  flex: 1;
+}
+
+/* Responsive text - prevent vertical breaking */
+.admin-text {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+/* Responsive cards */
+.admin-card {
+  min-width: 0;
+}
+
+.admin-card-content {
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .admin-card-content {
+    padding: 1.5rem;
+  }
+}
+
+/* Responsive grid */
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Responsive buttons grid */
+.admin-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+@media (min-width: 1024px) {
+  .admin-actions-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+}
+
+/* Responsive menu images grid */
+.admin-menu-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .admin-menu-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin-menu-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Responsive header */
+.admin-header {
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .admin-header {
+    padding: 1rem 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin-header {
+    padding: 1rem 2rem;
+  }
+}
+
+/* Responsive content padding */
+.admin-content {
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .admin-content {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin-content {
+    padding: 2rem;
+  }
+}
+
+/* Mobile overlay */
+.admin-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 40;
+  transition: opacity 0.3s ease-in-out;
+}
+
+@media (min-width: 1024px) {
+  .admin-overlay {
+    display: none;
+  }
+}
+
+/* Responsive font sizes */
+.admin-title {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+@media (min-width: 640px) {
+  .admin-title {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+}
+
+.admin-stat-value {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+@media (min-width: 640px) {
+  .admin-stat-value {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+}
+
+/* Responsive icon sizes */
+.admin-icon-sm {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .admin-icon-sm {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+}
+
+.admin-icon-md {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+@media (min-width: 640px) {
+  .admin-icon-md {
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+/* Responsive button heights */
+.admin-action-button {
+  height: 4rem;
+}
+
+@media (min-width: 640px) {
+  .admin-action-button {
+    height: 5rem;
+  }
+}
+
+/* Prevent text from breaking vertically */
+.admin-no-break {
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+/* Truncate long text */
+.admin-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Flex utilities for responsive layout */
+.admin-flex-responsive {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .admin-flex-responsive {
+    flex-direction: row;
+    gap: 1.5rem;
+  }
+}
+
+/* Responsive toast */
+.admin-toast {
+  max-width: calc(100vw - 2rem);
+  min-width: auto;
+}
+
+@media (min-width: 640px) {
+  .admin-toast {
+    min-width: 300px;
+  }
+}
+
+/* Hide mobile menu button on desktop */
+.admin-mobile-menu-btn {
+  display: block;
+}
+
+@media (min-width: 1024px) {
+  .admin-mobile-menu-btn {
+    display: none;
+  }
+}
+
+/* Hide sidebar close button on desktop */
+.admin-sidebar-close-btn {
+  display: block;
+}
+
+@media (min-width: 1024px) {
+  .admin-sidebar-close-btn {
+    display: none;
+  }
+}
