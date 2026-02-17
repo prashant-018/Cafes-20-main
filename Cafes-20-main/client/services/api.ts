@@ -1,8 +1,24 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://cafes-20-main-6.onrender.com/api';
+// Ensure API_BASE_URL always ends with /api and doesn't have double slashes
+const normalizeApiUrl = (url: string): string => {
+  // Remove trailing slash
+  let normalized = url.replace(/\/$/, '');
+
+  // Ensure it ends with /api
+  if (!normalized.endsWith('/api')) {
+    normalized = `${normalized}/api`;
+  }
+
+  return normalized;
+};
+
+const API_BASE_URL = normalizeApiUrl(
+  import.meta.env.VITE_API_URL || 'https://cafes-20-main-6.onrender.com'
+);
 
 // Log API configuration (development only)
 if (import.meta.env.DEV) {
   console.log('🔧 API Configuration:');
+  console.log('   VITE_API_URL:', import.meta.env.VITE_API_URL);
   console.log('   Base URL:', API_BASE_URL);
   console.log('   Mode:', import.meta.env.MODE);
 }
