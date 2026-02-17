@@ -1,0 +1,54 @@
+# Netlify Configuration for Vite + React SPA
+
+[build]
+  # Build command
+  command = "npm run build"
+  
+  # Publish directory (Vite default output)
+  publish = "dist"
+  
+  # Base directory (if your frontend is in a subdirectory)
+  # base = "client"
+
+[build.environment]
+  # Node version
+  NODE_VERSION = "18"
+
+# SPA redirect rule (fallback if _redirects doesn't work)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false
+  
+  # Don't redirect API calls
+  conditions = {Role = ["admin", "user"]}
+
+# Headers for security and caching
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"

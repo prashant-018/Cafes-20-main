@@ -1,0 +1,8 @@
+# Netlify SPA Redirect Rules for React Router
+# This file handles client-side routing for Single Page Applications
+
+# API calls should NOT be redirected (if you have any proxied APIs)
+/api/*  https://cafes-20-main-6.onrender.com/api/:splat  200
+
+# All other routes should serve index.html for client-side routing
+/*  /index.html  200
