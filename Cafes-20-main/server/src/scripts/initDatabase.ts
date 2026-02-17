@@ -24,11 +24,16 @@ const initDatabase = async () => {
     console.log('✅ MongoDB Connected!\n');
 
     // Get database name
-    const dbName = mongoose.connection.db.databaseName;
+    const db = mongoose.connection.db;
+    if (!db) {
+      throw new Error('Database connection not established');
+    }
+
+    const dbName = db.databaseName;
     console.log(`📊 Database Name: ${dbName}\n`);
 
     // List all collections
-    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collections = await db.listCollections().toArray();
     console.log('📁 Existing Collections:');
     if (collections.length === 0) {
       console.log('   (No collections yet)\n');
@@ -53,7 +58,7 @@ const initDatabase = async () => {
       try {
         const exists = collections.find(c => c.name === col.name);
         if (!exists) {
-          await mongoose.connection.db.createCollection(col.name);
+          await db.createCollection(col.name);
           console.log(`   ✅ Created collection: ${col.name}`);
         } else {
           console.log(`   ℹ️  Collection already exists: ${col.name}`);

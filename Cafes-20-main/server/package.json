@@ -5,17 +5,15 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only --exit-child --ignore-watch node_modules src/server.ts",
-    "build": "tsc -p tsconfig.prod.json",
-    "build:strict": "tsc",
+    "build": "npm run clean && tsc -p tsconfig.prod.json",
+    "build:strict": "npm run clean && tsc",
     "start": "node dist/server.js",
     "clean": "rimraf dist",
     "type-check": "tsc --noEmit",
-    "install-deps": "node install.js",
+    "postinstall": "npm run build",
     "seed:admin": "ts-node src/scripts/seedAdmin.ts",
     "db:seed": "npm run seed:admin",
-    "db:init": "ts-node src/scripts/initDatabase.ts",
-    "test:auth": "ts-node src/scripts/testAuth.ts",
-    "test:jwt": "ts-node src/scripts/testJWT.ts"
+    "db:init": "ts-node src/scripts/initDatabase.ts"
   },
   "keywords": [
     "express",

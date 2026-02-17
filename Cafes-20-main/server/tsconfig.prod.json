@@ -1,16 +1,22 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    /* Production Optimizations */
+    "sourceMap": false,
+    "declaration": false,
+    "declarationMap": false,
+    "removeComments": true,
+    /* Relaxed Type Checking for Production Build */
     "noImplicitReturns": false,
-    "strict": false,
-    "noImplicitAny": false,
-    "strictNullChecks": false
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   },
   "exclude": [
     "node_modules",
     "dist",
+    "**/*.spec.ts",
+    "**/*.test.ts",
     "src/scripts/testAuth.ts",
-    "src/scripts/seedAdmin.ts",
     "src/scripts/testJWT.ts"
   ]
 }

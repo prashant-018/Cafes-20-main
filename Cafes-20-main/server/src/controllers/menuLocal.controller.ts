@@ -53,7 +53,7 @@ export const getMenuImages = async (req: AuthRequest, res: Response) => {
  * @desc    Get single menu image by ID
  * @access  Public
  */
-export const getMenuImageById = async (req: AuthRequest, res: Response) => {
+export const getMenuImageById = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     console.log(`📥 GET /api/menu-local/${id} - Fetching menu image`);
@@ -64,13 +64,14 @@ export const getMenuImageById = async (req: AuthRequest, res: Response) => {
     }).lean();
 
     if (!menuImage) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: 'Menu image not found'
       });
+      return;
     }
 
-    console.log('✅ Menu image found:', menuImage.name);
+    console.log('✅ Menu image found:', (menuImage as any).name);
 
     res.json({
       success: true,
@@ -237,7 +238,7 @@ export const deleteMenuImage = async (req: AuthRequest, res: Response) => {
  * @desc    Update menu image metadata
  * @access  Private (Admin only)
  */
-export const updateMenuImage = async (req: AuthRequest, res: Response) => {
+export const updateMenuImage = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const { name, isActive } = req.body;
@@ -255,13 +256,14 @@ export const updateMenuImage = async (req: AuthRequest, res: Response) => {
     ).lean();
 
     if (!menuImage) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: 'Menu image not found'
       });
+      return;
     }
 
-    console.log('✅ Menu image updated:', menuImage.name);
+    console.log('✅ Menu image updated:', (menuImage as any).name);
 
     // Emit real-time update
     emitMenuUpdate('imageUpdated', menuImage);

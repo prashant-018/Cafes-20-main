@@ -31,17 +31,47 @@ import './models/Settings';
 const app = express();
 const server = createServer(app);
 
-// Initialize Socket.IO
+// Environment configuration
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const PORT = process.env.PORT || 5000;
+const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+
+// Allowed origins for CORS
+const getAllowedOrigins = (): string[] => {
+  const origins = [CLIENT_URL];
+
+  // In development, allow common development ports
+  if (NODE_ENV === 'development') {
+    origins.push(
+      'http://localhost:5173',  // Vite default
+      'http://localhost:3000',  // React/Next.js default
+      'http://localhost:8080',  // Alternative port
+      'http://127.0.0.1:5173',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:8080'
+    );
+  }
+
+  // Remove duplicates
+  return [...new Set(origins)];
+};
+
+const allowedOrigins = getAllowedOrigins();
+
+console.log('🌐 CORS Configuration:');
+console.log('   Environment:', NODE_ENV);
+console.log('   Allowed Origins:', allowedOrigins);
+
+// Initialize Socket.IO with proper CORS
 const io = new Server(server, {
   cors: {
-    origin: [
-      process.env.CLIENT_URL || "http://localhost:5173",
-      "http://localhost:8080",
-      "http://localhost:3000"
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true
-  }
+    origin: allowedOrigins,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  },
+  transports: ['websocket', 'polling'],
+  allowEIO3: true
 });
 
 // Set Socket.IO instance for controllers
@@ -49,42 +79,58 @@ setSocketIO(io);
 setMenuLocalSocketIO(io);
 setSettingsSocketIO(io);
 
-// Security middleware - NO CSP in development
+// Security middleware
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" },
-  contentSecurityPolicy: false // Disable CSP for development
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  contentSecurityPolicy: NODE_ENV === 'production' ? undefined : false
 }));
 
 // Compression middleware
 app.use(compression());
 
-// CORS configuration - Allow frontend on port 8080
+// CORS middleware - MUST be before routes
 app.use(cors({
-  origin: [
-    process.env.CLIENT_URL || "http://localhost:5173",
-    "http://localhost:8080",
-    "http://localhost:3000",
-    "http://localhost:5000"
-  ],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(`⚠️  CORS blocked origin: ${origin}`);
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
+    }
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 86400 // 24 hours
 }));
 
-// Body parsing middleware
+// Handle preflight requests
+app.options('*', cors());
+
+// Body parsing middleware - MUST be before routes
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Serve static files from uploads directory
 const uploadsPath = path.join(__dirname, '../uploads');
 app.use('/uploads', express.static(uploadsPath));
-console.log('📁 Static uploads folder configured:', uploadsPath);
 
-// Request logging middleware
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-  next();
-});
+// Request logging middleware (development only)
+if (NODE_ENV === 'development') {
+  app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+    if (req.body && Object.keys(req.body).length > 0) {
+      console.log('   Body:', JSON.stringify(req.body, null, 2));
+    }
+    next();
+  });
+}
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -92,7 +138,10 @@ app.get('/api/health', (req, res) => {
     success: true,
     message: 'The Himalayan Pizza API is running',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: NODE_ENV,
+    cors: {
+      allowedOrigins: allowedOrigins
+    }
   });
 });
 
@@ -104,7 +153,7 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     status: 'Server is running',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'production',
+    environment: NODE_ENV,
     endpoints: {
       health: '/api/health',
       auth: {
@@ -121,9 +170,7 @@ app.get('/', (req, res) => {
         uploadImages: 'POST /api/menu-simple/upload (Admin only)',
         deleteImage: 'DELETE /api/menu-simple/:id (Admin only)'
       }
-    },
-    documentation: 'https://github.com/your-repo/api-docs',
-    support: 'Contact: admin@himalayan-pizza.com'
+    }
   });
 });
 
@@ -135,32 +182,28 @@ app.use('/api/menu-simple', menuSimpleRoutes);
 app.use('/api/business-settings', businessSettingsRoutes);
 app.use('/api/settings', settingsRoutes);
 
-console.log('✅ All routes registered');
-console.log('   - /api/auth');
-console.log('   - /api/menu');
-console.log('   - /api/menu-local');
-console.log('   - /api/menu-simple');
-console.log('   - /api/business-settings');
-console.log('   - /api/settings');
-
 // Socket.IO connection handling
 io.on('connection', (socket) => {
-  console.log(`✅ Client connected: ${socket.id}`);
+  console.log(`✅ Socket.IO client connected: ${socket.id}`);
 
   // Join admin room for real-time updates
   socket.on('joinAdmin', () => {
     socket.join('admin');
-    console.log(`Admin joined: ${socket.id}`);
+    console.log(`👤 Admin joined: ${socket.id}`);
   });
 
   // Join user room for real-time updates
   socket.on('joinUser', () => {
     socket.join('user');
-    console.log(`User joined: ${socket.id}`);
+    console.log(`👤 User joined: ${socket.id}`);
   });
 
-  socket.on('disconnect', () => {
-    console.log(`❌ Client disconnected: ${socket.id}`);
+  socket.on('disconnect', (reason) => {
+    console.log(`❌ Socket.IO client disconnected: ${socket.id} - Reason: ${reason}`);
+  });
+
+  socket.on('error', (error) => {
+    console.error(`❌ Socket.IO error for ${socket.id}:`, error);
   });
 });
 
@@ -169,8 +212,6 @@ app.use(notFound);
 
 // Global error handler (must be last)
 app.use(errorHandler);
-
-const PORT = process.env.PORT || 5000;
 
 // Start server function
 const startServer = async () => {
@@ -189,9 +230,10 @@ const startServer = async () => {
 ║   🍕 The Himalayan Pizza - Backend API                ║
 ║                                                        ║
 ║   🚀 Server running on port ${PORT}                      ║
-║   📊 Environment: ${process.env.NODE_ENV || 'development'}                      ║
-║   🌐 Frontend URL: ${process.env.CLIENT_URL || 'http://localhost:8080'}    ║
+║   📊 Environment: ${NODE_ENV.padEnd(11)}                      ║
+║   🌐 Frontend URL: ${CLIENT_URL.padEnd(30)} ║
 ║   📡 Socket.IO enabled                                 ║
+║   🔒 CORS configured                                   ║
 ║                                                        ║
 ║   Available Routes:                                    ║
 ║   • POST /api/auth/login                               ║
@@ -200,6 +242,8 @@ const startServer = async () => {
 ║   • GET  /api/settings                                 ║
 ║   • PUT  /api/settings (Admin)                         ║
 ║   • GET  /api/health                                   ║
+║                                                        ║
+║   🧪 Test: curl http://localhost:${PORT}/api/health        ║
 ║                                                        ║
 ╚════════════════════════════════════════════════════════╝
       `);
@@ -220,18 +264,26 @@ const startServer = async () => {
 startServer();
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received. Shutting down gracefully...');
-  server.close(() => {
-    console.log('Process terminated');
-  });
-});
+const gracefulShutdown = (signal: string) => {
+  console.log(`\n${signal} received. Shutting down gracefully...`);
 
-process.on('SIGINT', () => {
-  console.log('SIGINT received. Shutting down gracefully...');
   server.close(() => {
-    console.log('Process terminated');
+    console.log('✅ HTTP server closed');
+
+    io.close(() => {
+      console.log('✅ Socket.IO server closed');
+      process.exit(0);
+    });
   });
-});
+
+  // Force close after 10 seconds
+  setTimeout(() => {
+    console.error('⚠️  Forced shutdown after timeout');
+    process.exit(1);
+  }, 10000);
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 export default app;
