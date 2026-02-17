@@ -1,7 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface ISettings extends Document {
-  _id: string;
   whatsappNumber: string;
   openingTime: string;
   closingTime: string;
@@ -50,7 +49,7 @@ const SettingsSchema: Schema<ISettings> = new Schema(
   {
     timestamps: true,
     toJSON: {
-      transform: function (_doc, ret) {
+      transform: function (_doc, ret: any) {
         ret.id = ret._id;
         delete ret._id;
         delete ret.__v;

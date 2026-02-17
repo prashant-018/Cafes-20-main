@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noImplicitReturns": false,
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/scripts/testAuth.ts",
+    "src/scripts/seedAdmin.ts",
+    "src/scripts/testJWT.ts"
+  ]
+}

@@ -1,7 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IMenuImage extends Document {
-  _id: string;
   name: string;
   url: string;
   cloudinaryId: string;
@@ -51,7 +50,7 @@ const MenuImageSchema: Schema = new Schema({
 }, {
   timestamps: true,
   toJSON: {
-    transform: function (doc, ret) {
+    transform: function (doc, ret: any) {
       ret.id = ret._id;
       delete ret._id;
       delete ret.__v;

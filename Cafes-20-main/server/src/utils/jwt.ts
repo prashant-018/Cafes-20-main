@@ -143,10 +143,10 @@ export const signToken = (payload: JWTPayload, customExpiry?: string): string =>
     const expiresIn = getJWTExpiresIn(customExpiry);
 
     const token = jwt.sign(payload, secret, {
-      expiresIn,
+      expiresIn: expiresIn,
       issuer: 'himalayan-pizza-api',
       audience: 'himalayan-pizza-client'
-    });
+    } as jwt.SignOptions);
 
     return token;
   } catch (error) {

@@ -58,4 +58,34 @@ async function createUser() {
     // Create user
     console.log('\n🔄 Creating user...');
     const user = new User({
-      na
+      name,
+      email,
+      password,
+      role
+    });
+
+    await user.save();
+
+    console.log('\n✅ User created successfully!');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('📋 User Details:');
+    console.log(`   Name: ${user.name}`);
+    console.log(`   Email: ${user.email}`);
+    console.log(`   Role: ${user.role}`);
+    console.log(`   ID: ${user._id}`);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+
+    process.exit(0);
+  } catch (error) {
+    console.error('\n❌ Error creating user:', error);
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+    }
+    process.exit(1);
+  } finally {
+    rl.close();
+  }
+}
+
+// Run the script
+createUser();
