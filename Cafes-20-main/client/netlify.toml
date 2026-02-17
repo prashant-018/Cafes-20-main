@@ -1,4 +1,7 @@
+# ============================================
 # Netlify Configuration for Vite + React SPA
+# The Himalayan Cafes - Frontend
+# ============================================
 
 [build]
   # Build command
@@ -7,35 +10,53 @@
   # Publish directory (Vite default output)
   publish = "dist"
   
-  # Base directory (if your frontend is in a subdirectory)
-  # base = "client"
+  # Base directory (leave empty if deploying from client folder)
+  # base = ""
 
 [build.environment]
   # Node version
   NODE_VERSION = "18"
+  
+  # Environment variables (set in Netlify Dashboard for security)
+  # VITE_API_URL will be set in Netlify UI
 
-# SPA redirect rule (fallback if _redirects doesn't work)
+# ============================================
+# SPA Routing - Serve index.html for all routes
+# ============================================
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
   force = false
-  
-  # Don't redirect API calls
-  conditions = {Role = ["admin", "user"]}
 
-# Headers for security and caching
+# ============================================
+# Security Headers
+# ============================================
 [[headers]]
   for = "/*"
   [headers.values]
+    # Prevent clickjacking
     X-Frame-Options = "DENY"
+    
+    # XSS protection
     X-XSS-Protection = "1; mode=block"
+    
+    # Prevent MIME type sniffing
     X-Content-Type-Options = "nosniff"
+    
+    # Referrer policy
     Referrer-Policy = "strict-origin-when-cross-origin"
+    
+    # Permissions policy
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
 
+# ============================================
+# Cache Headers for Assets
+# ============================================
 [[headers]]
   for = "/assets/*"
   [headers.values]
+    # Cache assets for 1 year (immutable)
     Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
@@ -49,6 +70,25 @@
     Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
+  for = "/*.woff2"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.woff"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# ============================================
+# No Cache for HTML (always fresh)
+# ============================================
+[[headers]]
   for = "/index.html"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
