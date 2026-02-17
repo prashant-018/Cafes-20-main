@@ -107,8 +107,8 @@ export function Offers() {
               <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary transition-colors">
                 <Clock className="w-8 h-8 text-primary group-hover:text-white transition-colors" />
               </div>
-              <h4 className="text-xl font-bold text-white mb-2">24/7 Cravings</h4>
-              <p className="text-muted-foreground">Because mountain vibes never sleep. Open all night.</p>
+              <h4 className="text-xl font-bold text-white mb-2">Open Daily</h4>
+              <p className="text-muted-foreground">Serving fresh and hot pizzas every day during our working hours.</p>
             </motion.div>
 
             <div className="p-8 rounded-3xl bg-primary flex flex-col items-center justify-center text-center">

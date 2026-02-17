@@ -53,32 +53,32 @@ export function Footer() {
           </p>
           <div className="flex gap-4">
             <motion.a
-              href="https://www.facebook.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ y: -5, color: "hsl(var(--primary))" }}
-              className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:border-primary transition-all"
-              aria-label="Facebook"
-            >
-              <Facebook className="w-5 h-5" />
-            </motion.a>
-            <motion.a
               href="https://www.instagram.com/the_himalayan_pizza/"
               target="_blank"
               rel="noopener noreferrer"
-              whileHover={{ y: -5, color: "hsl(var(--primary))" }}
-              className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:border-primary transition-all"
+              whileHover={{ y: -5, scale: 1.1 }}
+              className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/70 hover:text-primary hover:bg-primary/10 hover:border-primary transition-all duration-300"
               aria-label="Instagram"
             >
               <Instagram className="w-5 h-5" />
             </motion.a>
             <motion.a
-              href="https://www.twitter.com"
+              href="https://www.facebook.com/thehimalayanpizza"
               target="_blank"
               rel="noopener noreferrer"
-              whileHover={{ y: -5, color: "hsl(var(--primary))" }}
-              className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:border-primary transition-all"
-              aria-label="Twitter"
+              whileHover={{ y: -5, scale: 1.1 }}
+              className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/70 hover:text-primary hover:bg-primary/10 hover:border-primary transition-all duration-300"
+              aria-label="Facebook"
+            >
+              <Facebook className="w-5 h-5" />
+            </motion.a>
+            <motion.a
+              href="https://twitter.com/himalayan_pizza"
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ y: -5, scale: 1.1 }}
+              className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/70 hover:text-primary hover:bg-primary/10 hover:border-primary transition-all duration-300"
+              aria-label="X (Twitter)"
             >
               <Twitter className="w-5 h-5" />
             </motion.a>
@@ -120,10 +120,10 @@ export function Footer() {
               <li className="flex items-center gap-3 text-muted-foreground">
                 <Mail className="w-5 h-5 text-primary flex-shrink-0" />
                 <a
-                  href="mailto:hello@himalayanpizza.com"
+                  href="mailto:palakpgupta07@gmail.com"
                   className="hover:text-primary transition-colors"
                 >
-                  hello@himalayanpizza.com
+                  palakpgupta07@gmail.com
                 </a>
               </li>
             </ul>
