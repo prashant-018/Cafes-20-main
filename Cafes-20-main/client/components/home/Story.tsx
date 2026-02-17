@@ -1,14 +1,18 @@
 import { motion } from "framer-motion";
-import { Heart, Star, Users } from "lucide-react";
+import { Heart, Star, Users, MessageCircle, Volume2, VolumeX } from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
+import { useRef, useState } from "react";
 
 export function Story() {
   const { settings } = useSettings();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isMuted, setIsMuted] = useState(true);
+
   const timelineItems = [
     {
       year: "2015",
       title: "The Beginning",
-      desc: "Started as a small wood-fired oven in the heart of Jabalpur.",
+      desc: "Our journey began in the heart of Himachal Pradesh, where we opened our first outlet inspired by the flavors and spirit of the mountains.",
       icon: Heart,
     },
     {
@@ -31,6 +35,13 @@ export function Story() {
       : "Every pizza tells a story of heights, heat, and heart. We bring the freshness of the mountains to the bustling streets of Jabalpur, creating a symphony of flavors that resonate with every bite.";
 
   const words = sentence.split(" ");
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted;
+      setIsMuted(videoRef.current.muted);
+    }
+  };
 
   const container = {
     hidden: { opacity: 0 },
@@ -115,21 +126,72 @@ export function Story() {
           </div>
 
           <div className="relative">
+            {/* Professional Cinematic Video Card */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9, rotate: -5 }}
               whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 1 }}
-              className="relative rounded-2xl overflow-hidden aspect-[4/5] shadow-2xl"
+              whileHover={{ scale: 1.03 }}
+              className="relative rounded-[20px] overflow-hidden aspect-[4/5] shadow-2xl group"
             >
-              <img
-                src="https://cdn.builder.io/api/v1/image/assets%2Fd869254f392a4226b2f3507b9db880c1%2Ff2270de8dfe84e6c8ec7341389cde111?format=webp&width=800&height=1200"
-                alt="The Himalayan Pizza Interior"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+              {/* Cinematic Autoplay Video */}
+              <video
+                ref={videoRef}
+                className="w-full h-full object-cover transition-transform duration-700"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="auto"
+                poster="https://cdn.builder.io/api/v1/image/assets%2Fd869254f392a4226b2f3507b9db880c1%2Ff2270de8dfe84e6c8ec7341389cde111?format=webp&width=800&height=1200"
+              >
+                <source src="/story.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+
+              {/* Dark gradient overlay for depth */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+
+              {/* Mute/Unmute Toggle Button - Top Right */}
+              <motion.button
+                onClick={toggleMute}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.5 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10 hover:bg-primary/80 hover:border-primary transition-all duration-300 z-10 group/btn"
+                aria-label={isMuted ? "Unmute video" : "Mute video"}
+              >
+                {isMuted ? (
+                  <VolumeX className="w-4 h-4 text-white group-hover/btn:scale-110 transition-transform" />
+                ) : (
+                  <Volume2 className="w-4 h-4 text-white group-hover/btn:scale-110 transition-transform" />
+                )}
+              </motion.button>
             </motion.div>
 
+            {/* WhatsApp Contact Button */}
+            <motion.a
+              href={`https://wa.me/${settings?.whatsappNumber || '919876543210'}?text=Hi! I'd like to know more about The Himalayan Pizza`}
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3 }}
+              className="absolute -bottom-6 -left-6 bg-green-600 hover:bg-green-700 p-6 rounded-2xl shadow-2xl flex items-center gap-4 group transition-all"
+            >
+              <MessageCircle className="w-8 h-8 text-white group-hover:scale-110 transition-transform" />
+              <div>
+                <p className="text-white font-bold text-lg">Chat with us</p>
+                <p className="text-white/80 text-sm">on WhatsApp</p>
+              </div>
+            </motion.a>
+
+            {/* Red "9+ Years" Badge */}
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
