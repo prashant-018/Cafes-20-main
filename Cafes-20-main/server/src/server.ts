@@ -102,9 +102,37 @@ const getAllowedOrigins = (): string[] => {
   return uniqueOrigins;
 };
 
+// ✅ PRODUCTION-SAFE: Check if origin is allowed (supports Netlify preview URLs)
+const isOriginAllowed = (origin: string): boolean => {
+  if (!origin) return false;
+
+  const sanitizedOrigin = origin.trim();
+
+  // Check exact matches first (faster)
+  if (allowedOrigins.includes(sanitizedOrigin)) {
+    return true;
+  }
+
+  // ✅ NETLIFY PREVIEW SUPPORT: Allow any Netlify preview URL
+  // Pattern: https://*--cafee2015.netlify.app
+  const netlifyPreviewPattern = /^https:\/\/[a-z0-9]+-[a-z0-9]+--cafee2015\.netlify\.app$/i;
+  if (netlifyPreviewPattern.test(sanitizedOrigin)) {
+    console.log(`   ✅ Netlify preview URL matched: ${sanitizedOrigin}`);
+    return true;
+  }
+
+  // ✅ NETLIFY MAIN DOMAIN: Allow main domain
+  if (sanitizedOrigin === 'https://cafee2015.netlify.app') {
+    console.log(`   ✅ Netlify main domain matched: ${sanitizedOrigin}`);
+    return true;
+  }
+
+  return false;
+};
+
 const allowedOrigins = getAllowedOrigins();
 
-// Initialize Socket.IO with proper CORS for cross-site
+// Initialize Socket.IO with proper CORS for cross-site + Netlify previews
 const io = new Server(server, {
   cors: {
     origin: (origin, callback) => {
@@ -113,7 +141,8 @@ const io = new Server(server, {
         return callback(null, true);
       }
 
-      if (allowedOrigins.includes(origin)) {
+      // Use the same origin validation logic
+      if (isOriginAllowed(origin)) {
         callback(null, true);
       } else {
         console.warn(`⚠️  Socket.IO CORS blocked origin: ${origin}`);
@@ -153,7 +182,7 @@ app.use(helmet({
 app.use(compression());
 
 // CORS middleware - MUST be before routes
-// ✅ CRITICAL: Proper CORS for cross-site Netlify → Render
+// ✅ PRODUCTION-SAFE: Supports Netlify preview URLs + main domain
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, Postman, curl, server-to-server)
@@ -169,18 +198,15 @@ app.use(cors({
     console.log(`   🔍 CORS: Checking origin: "${sanitizedOrigin}" (length: ${sanitizedOrigin.length})`);
     console.log(`      JSON: ${JSON.stringify(sanitizedOrigin)}`);
 
-    if (allowedOrigins.includes(sanitizedOrigin)) {
+    // Use centralized origin validation (supports Netlify previews)
+    if (isOriginAllowed(sanitizedOrigin)) {
       console.log(`   ✅ CORS: Origin allowed: "${sanitizedOrigin}"`);
       callback(null, true);
     } else {
       console.warn(`   ❌ CORS: Origin BLOCKED: "${sanitizedOrigin}"`);
       console.warn(`      Allowed origins:`, allowedOrigins);
-      console.warn(`      Checking each allowed origin:`);
-      allowedOrigins.forEach((allowed, index) => {
-        const matches = allowed === sanitizedOrigin;
-        console.warn(`         [${index}] "${allowed}" === "${sanitizedOrigin}" ? ${matches}`);
-        console.warn(`             Lengths: ${allowed.length} vs ${sanitizedOrigin.length}`);
-      });
+      console.warn(`      Netlify preview pattern: https://*--cafee2015.netlify.app`);
+      console.warn(`      Netlify main domain: https://cafee2015.netlify.app`);
       callback(new Error(`Origin ${sanitizedOrigin} not allowed by CORS`));
     }
   },
