@@ -31,24 +31,42 @@ import './models/Settings';
 const app = express();
 const server = createServer(app);
 
-// Environment configuration
-const NODE_ENV = process.env.NODE_ENV || 'development';
-const PORT = process.env.PORT || 5000;
-const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+// ✅ BULLETPROOF: Sanitize environment variables (remove whitespace, newlines, quotes)
+const sanitizeEnvVar = (value: string | undefined, defaultValue: string): string => {
+  if (!value) return defaultValue;
 
-console.log('🔧 Environment Variables Loaded:');
+  // Remove all whitespace, newlines, carriage returns, tabs, quotes
+  const sanitized = value
+    .replace(/[\r\n\t]/g, '')  // Remove newlines, carriage returns, tabs
+    .replace(/['"]/g, '')       // Remove quotes
+    .trim();                    // Remove leading/trailing whitespace
+
+  return sanitized || defaultValue;
+};
+
+// Environment configuration with sanitization
+const NODE_ENV = sanitizeEnvVar(process.env.NODE_ENV, 'development');
+const PORT = process.env.PORT || 5000;
+const CLIENT_URL = sanitizeEnvVar(process.env.CLIENT_URL, 'http://localhost:5173');
+
+console.log('🔧 Environment Variables Loaded (Sanitized):');
 console.log('   NODE_ENV:', NODE_ENV);
 console.log('   PORT:', PORT);
 console.log('   CLIENT_URL:', CLIENT_URL);
+console.log('   CLIENT_URL length:', CLIENT_URL.length);
+console.log('   CLIENT_URL (JSON):', JSON.stringify(CLIENT_URL)); // Shows hidden chars
 
-// ✅ DYNAMIC: Allowed origins for CORS
+// ✅ BULLETPROOF: Dynamic allowed origins for CORS
 const getAllowedOrigins = (): string[] => {
   const origins: string[] = [];
 
   // ✅ ALWAYS add CLIENT_URL from environment (production or development)
-  if (CLIENT_URL) {
+  if (CLIENT_URL && CLIENT_URL !== '') {
     origins.push(CLIENT_URL);
     console.log('   ✅ Added CLIENT_URL to allowed origins:', CLIENT_URL);
+    console.log('      Length:', CLIENT_URL.length, '| JSON:', JSON.stringify(CLIENT_URL));
+  } else {
+    console.warn('   ⚠️  CLIENT_URL is empty or undefined!');
   }
 
   // ✅ In development, ALSO allow common development ports
@@ -65,10 +83,21 @@ const getAllowedOrigins = (): string[] => {
     console.log('   ✅ Added development origins');
   }
 
-  // Remove duplicates and empty strings
-  const uniqueOrigins = [...new Set(origins.filter(Boolean))];
+  // Remove duplicates, empty strings, and sanitize each origin
+  const uniqueOrigins = [...new Set(
+    origins
+      .filter(Boolean)
+      .map(origin => origin.trim())
+      .filter(origin => origin.length > 0)
+  )];
 
   console.log('   📋 Final allowed origins:', uniqueOrigins);
+  console.log('   📊 Total origins:', uniqueOrigins.length);
+
+  // Debug: Show each origin with length
+  uniqueOrigins.forEach((origin, index) => {
+    console.log(`      [${index}] "${origin}" (length: ${origin.length})`);
+  });
 
   return uniqueOrigins;
 };
@@ -129,15 +158,30 @@ app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, Postman, curl, server-to-server)
     if (!origin) {
+      console.log('   ✅ CORS: Allowing request with no origin');
       return callback(null, true);
     }
 
-    if (allowedOrigins.includes(origin)) {
+    // Sanitize incoming origin (remove whitespace)
+    const sanitizedOrigin = origin.trim();
+
+    // Debug: Log origin check
+    console.log(`   🔍 CORS: Checking origin: "${sanitizedOrigin}" (length: ${sanitizedOrigin.length})`);
+    console.log(`      JSON: ${JSON.stringify(sanitizedOrigin)}`);
+
+    if (allowedOrigins.includes(sanitizedOrigin)) {
+      console.log(`   ✅ CORS: Origin allowed: "${sanitizedOrigin}"`);
       callback(null, true);
     } else {
-      console.warn(`⚠️  CORS blocked origin: ${origin}`);
-      console.warn(`   Allowed origins:`, allowedOrigins);
-      callback(new Error(`Origin ${origin} not allowed by CORS`));
+      console.warn(`   ❌ CORS: Origin BLOCKED: "${sanitizedOrigin}"`);
+      console.warn(`      Allowed origins:`, allowedOrigins);
+      console.warn(`      Checking each allowed origin:`);
+      allowedOrigins.forEach((allowed, index) => {
+        const matches = allowed === sanitizedOrigin;
+        console.warn(`         [${index}] "${allowed}" === "${sanitizedOrigin}" ? ${matches}`);
+        console.warn(`             Lengths: ${allowed.length} vs ${sanitizedOrigin.length}`);
+      });
+      callback(new Error(`Origin ${sanitizedOrigin} not allowed by CORS`));
     }
   },
   credentials: true, // ✅ CRITICAL: Enable credentials for cross-site requests
