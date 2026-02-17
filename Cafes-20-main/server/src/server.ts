@@ -36,31 +36,44 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 const PORT = process.env.PORT || 5000;
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 
-// Allowed origins for CORS
-const getAllowedOrigins = (): string[] => {
-  const origins = [CLIENT_URL];
+console.log('🔧 Environment Variables Loaded:');
+console.log('   NODE_ENV:', NODE_ENV);
+console.log('   PORT:', PORT);
+console.log('   CLIENT_URL:', CLIENT_URL);
 
-  // In development, allow common development ports
+// ✅ DYNAMIC: Allowed origins for CORS
+const getAllowedOrigins = (): string[] => {
+  const origins: string[] = [];
+
+  // ✅ ALWAYS add CLIENT_URL from environment (production or development)
+  if (CLIENT_URL) {
+    origins.push(CLIENT_URL);
+    console.log('   ✅ Added CLIENT_URL to allowed origins:', CLIENT_URL);
+  }
+
+  // ✅ In development, ALSO allow common development ports
   if (NODE_ENV === 'development') {
-    origins.push(
+    const devOrigins = [
       'http://localhost:5173',  // Vite default
       'http://localhost:3000',  // React/Next.js default
       'http://localhost:8080',  // Alternative port
       'http://127.0.0.1:5173',
       'http://127.0.0.1:3000',
       'http://127.0.0.1:8080'
-    );
+    ];
+    origins.push(...devOrigins);
+    console.log('   ✅ Added development origins');
   }
 
-  // Remove duplicates
-  return [...new Set(origins)];
+  // Remove duplicates and empty strings
+  const uniqueOrigins = [...new Set(origins.filter(Boolean))];
+
+  console.log('   📋 Final allowed origins:', uniqueOrigins);
+
+  return uniqueOrigins;
 };
 
 const allowedOrigins = getAllowedOrigins();
-
-console.log('🌐 CORS Configuration:');
-console.log('   Environment:', NODE_ENV);
-console.log('   Allowed Origins:', allowedOrigins);
 
 // Initialize Socket.IO with proper CORS for cross-site
 const io = new Server(server, {
