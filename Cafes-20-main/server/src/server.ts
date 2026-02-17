@@ -62,16 +62,38 @@ console.log('🌐 CORS Configuration:');
 console.log('   Environment:', NODE_ENV);
 console.log('   Allowed Origins:', allowedOrigins);
 
-// Initialize Socket.IO with proper CORS
+// Initialize Socket.IO with proper CORS for cross-site
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      // Allow requests with no origin
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn(`⚠️  Socket.IO CORS blocked origin: ${origin}`);
+        callback(new Error(`Origin ${origin} not allowed by Socket.IO CORS`));
+      }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+    credentials: true, // ✅ CRITICAL: Enable credentials for cross-site WebSocket
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Accept',
+      'Origin'
+    ]
   },
   transports: ['websocket', 'polling'],
-  allowEIO3: true
+  allowEIO3: true,
+  // ✅ Additional cross-site configuration
+  cookie: false, // Don't use cookies for Socket.IO (we use JWT in headers)
+  pingTimeout: 60000,
+  pingInterval: 25000
 });
 
 // Set Socket.IO instance for controllers
@@ -89,9 +111,10 @@ app.use(helmet({
 app.use(compression());
 
 // CORS middleware - MUST be before routes
+// ✅ CRITICAL: Proper CORS for cross-site Netlify → Render
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, Postman, etc.)
+    // Allow requests with no origin (mobile apps, Postman, curl, server-to-server)
     if (!origin) {
       return callback(null, true);
     }
@@ -100,17 +123,28 @@ app.use(cors({
       callback(null, true);
     } else {
       console.warn(`⚠️  CORS blocked origin: ${origin}`);
+      console.warn(`   Allowed origins:`, allowedOrigins);
       callback(new Error(`Origin ${origin} not allowed by CORS`));
     }
   },
-  credentials: true,
+  credentials: true, // ✅ CRITICAL: Enable credentials for cross-site requests
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  exposedHeaders: ['Content-Range', 'X-Content-Range'],
-  maxAge: 86400 // 24 hours
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'Access-Control-Request-Method',
+    'Access-Control-Request-Headers'
+  ],
+  exposedHeaders: ['Content-Range', 'X-Content-Range', 'Authorization'],
+  maxAge: 86400, // 24 hours - cache preflight
+  preflightContinue: false, // ✅ End preflight here
+  optionsSuccessStatus: 204 // ✅ Proper status for OPTIONS
 }));
 
-// Handle preflight requests
+// ✅ CRITICAL: Handle preflight OPTIONS requests explicitly
 app.options('*', cors());
 
 // Body parsing middleware - MUST be before routes
@@ -121,16 +155,30 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 const uploadsPath = path.join(__dirname, '../uploads');
 app.use('/uploads', express.static(uploadsPath));
 
-// Request logging middleware (development only)
-if (NODE_ENV === 'development') {
-  app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-    if (req.body && Object.keys(req.body).length > 0) {
+// Request logging middleware
+app.use((req, res, next) => {
+  const timestamp = new Date().toISOString();
+  const origin = req.headers.origin || 'no-origin';
+
+  // Log all requests in production for debugging CORS
+  if (NODE_ENV === 'production' || NODE_ENV === 'development') {
+    console.log(`${timestamp} - ${req.method} ${req.path}`);
+    console.log(`   Origin: ${origin}`);
+
+    // Log preflight requests explicitly
+    if (req.method === 'OPTIONS') {
+      console.log('   🔍 PREFLIGHT REQUEST');
+      console.log('   Access-Control-Request-Method:', req.headers['access-control-request-method']);
+      console.log('   Access-Control-Request-Headers:', req.headers['access-control-request-headers']);
+    }
+
+    if (req.body && Object.keys(req.body).length > 0 && NODE_ENV === 'development') {
       console.log('   Body:', JSON.stringify(req.body, null, 2));
     }
-    next();
-  });
-}
+  }
+
+  next();
+});
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
