@@ -102,7 +102,7 @@ const getAllowedOrigins = (): string[] => {
   return uniqueOrigins;
 };
 
-// ✅ PRODUCTION-SAFE: Check if origin is allowed (supports Netlify preview URLs)
+// ✅ PRODUCTION-SAFE: Check if origin is allowed (supports Vercel preview URLs)
 const isOriginAllowed = (origin: string): boolean => {
   if (!origin) return false;
 
@@ -113,17 +113,17 @@ const isOriginAllowed = (origin: string): boolean => {
     return true;
   }
 
-  // ✅ NETLIFY PREVIEW SUPPORT: Allow any Netlify preview URL
-  // Pattern: https://*--cafee2015.netlify.app
-  const netlifyPreviewPattern = /^https:\/\/[a-z0-9]+-[a-z0-9]+--cafee2015\.netlify\.app$/i;
-  if (netlifyPreviewPattern.test(sanitizedOrigin)) {
-    console.log(`   ✅ Netlify preview URL matched: ${sanitizedOrigin}`);
+  // ✅ VERCEL PREVIEW SUPPORT: Allow any Vercel preview URL
+  // Pattern: https://cafes-20-main-*-nias.vercel.app
+  const vercelPreviewPattern = /^https:\/\/cafes-20-main-[a-z0-9]+-nias\.vercel\.app$/i;
+  if (vercelPreviewPattern.test(sanitizedOrigin)) {
+    console.log(`   ✅ Vercel preview URL matched: ${sanitizedOrigin}`);
     return true;
   }
 
-  // ✅ NETLIFY MAIN DOMAIN: Allow main domain
-  if (sanitizedOrigin === 'https://cafee2015.netlify.app') {
-    console.log(`   ✅ Netlify main domain matched: ${sanitizedOrigin}`);
+  // ✅ VERCEL MAIN DOMAIN: Allow main domain
+  if (sanitizedOrigin === 'https://cafes-20-main-nias.vercel.app') {
+    console.log(`   ✅ Vercel main domain matched: ${sanitizedOrigin}`);
     return true;
   }
 
@@ -182,7 +182,7 @@ app.use(helmet({
 app.use(compression());
 
 // CORS middleware - MUST be before routes
-// ✅ PRODUCTION-SAFE: Supports Netlify preview URLs + main domain
+// ✅ PRODUCTION-SAFE: Supports Vercel preview URLs + main domain
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, Postman, curl, server-to-server)
@@ -198,15 +198,15 @@ app.use(cors({
     console.log(`   🔍 CORS: Checking origin: "${sanitizedOrigin}" (length: ${sanitizedOrigin.length})`);
     console.log(`      JSON: ${JSON.stringify(sanitizedOrigin)}`);
 
-    // Use centralized origin validation (supports Netlify previews)
+    // Use centralized origin validation (supports Vercel previews)
     if (isOriginAllowed(sanitizedOrigin)) {
       console.log(`   ✅ CORS: Origin allowed: "${sanitizedOrigin}"`);
       callback(null, true);
     } else {
       console.warn(`   ❌ CORS: Origin BLOCKED: "${sanitizedOrigin}"`);
       console.warn(`      Allowed origins:`, allowedOrigins);
-      console.warn(`      Netlify preview pattern: https://*--cafee2015.netlify.app`);
-      console.warn(`      Netlify main domain: https://cafee2015.netlify.app`);
+      console.warn(`      Vercel preview pattern: https://cafes-20-main-*-nias.vercel.app`);
+      console.warn(`      Vercel main domain: https://cafes-20-main-nias.vercel.app`);
       callback(new Error(`Origin ${sanitizedOrigin} not allowed by CORS`));
     }
   },
