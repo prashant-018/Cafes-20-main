@@ -2,7 +2,14 @@ import { io, Socket } from 'socket.io-client';
 import { MenuImage } from './api';
 
 // Socket configuration
-const SOCKET_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+const SOCKET_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://cafes-20-main-6.onrender.com';
+
+// Log Socket.IO configuration (development only)
+if (import.meta.env.DEV) {
+  console.log('🔌 Socket.IO Configuration:');
+  console.log('   URL:', SOCKET_URL);
+  console.log('   Mode:', import.meta.env.MODE);
+}
 
 class SocketService {
   private socket: Socket | null = null;
@@ -20,6 +27,7 @@ class SocketService {
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionAttempts: this.maxReconnectAttempts,
+      withCredentials: true, // Important for CORS with credentials
     });
 
     this.setupEventListeners();

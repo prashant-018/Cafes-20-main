@@ -1,4 +1,11 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://cafes-20-main-6.onrender.com/api';
+
+// Log API configuration (development only)
+if (import.meta.env.DEV) {
+  console.log('🔧 API Configuration:');
+  console.log('   Base URL:', API_BASE_URL);
+  console.log('   Mode:', import.meta.env.MODE);
+}
 
 interface ApiResponse<T = any> {
   success: boolean;
@@ -91,6 +98,7 @@ class ApiService {
     const config: RequestInit = {
       ...options,
       headers,
+      credentials: 'include', // Important for CORS with credentials
     };
 
     try {
