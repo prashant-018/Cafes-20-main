@@ -114,15 +114,30 @@ const isOriginAllowed = (origin: string): boolean => {
   }
 
   // ✅ VERCEL PREVIEW SUPPORT: Allow any Vercel preview URL
-  // Pattern: https://cafes-20-main-*-nias.vercel.app
-  const vercelPreviewPattern = /^https:\/\/cafes-20-main-[a-z0-9]+-nias\.vercel\.app$/i;
-  if (vercelPreviewPattern.test(sanitizedOrigin)) {
-    console.log(`   ✅ Vercel preview URL matched: ${sanitizedOrigin}`);
+  // Patterns:
+  // - https://cafes-20-main-*-prashant2.vercel.app (preview deployments)
+  // - https://cafes-20-main-*.vercel.app (any preview)
+  // - https://*.vercel.app (all Vercel deployments)
+
+  // Match specific project preview URLs
+  const vercelPreviewPattern1 = /^https:\/\/cafes-20-main-[a-z0-9]+-prashant2\.vercel\.app$/i;
+  const vercelPreviewPattern2 = /^https:\/\/cafes-20-main-[a-z0-9]+-nias\.vercel\.app$/i;
+  const vercelPreviewPattern3 = /^https:\/\/cafes-20-main-[a-z0-9]+\.vercel\.app$/i;
+
+  // Match any Vercel deployment (most permissive - use with caution)
+  const vercelAnyPattern = /^https:\/\/[a-z0-9-]+\.vercel\.app$/i;
+
+  if (vercelPreviewPattern1.test(sanitizedOrigin) ||
+    vercelPreviewPattern2.test(sanitizedOrigin) ||
+    vercelPreviewPattern3.test(sanitizedOrigin) ||
+    vercelAnyPattern.test(sanitizedOrigin)) {
+    console.log(`   ✅ Vercel preview/deployment URL matched: ${sanitizedOrigin}`);
     return true;
   }
 
-  // ✅ VERCEL MAIN DOMAIN: Allow main domain
-  if (sanitizedOrigin === 'https://cafes-20-main-nias.vercel.app') {
+  // ✅ VERCEL MAIN DOMAINS: Allow main domains
+  if (sanitizedOrigin === 'https://cafes-20-main-nias.vercel.app' ||
+    sanitizedOrigin === 'https://cafes-20-main.vercel.app') {
     console.log(`   ✅ Vercel main domain matched: ${sanitizedOrigin}`);
     return true;
   }
@@ -205,8 +220,14 @@ app.use(cors({
     } else {
       console.warn(`   ❌ CORS: Origin BLOCKED: "${sanitizedOrigin}"`);
       console.warn(`      Allowed origins:`, allowedOrigins);
-      console.warn(`      Vercel preview pattern: https://cafes-20-main-*-nias.vercel.app`);
-      console.warn(`      Vercel main domain: https://cafes-20-main-nias.vercel.app`);
+      console.warn(`      Vercel patterns supported:`);
+      console.warn(`        - https://cafes-20-main-*-prashant2.vercel.app`);
+      console.warn(`        - https://cafes-20-main-*-nias.vercel.app`);
+      console.warn(`        - https://cafes-20-main-*.vercel.app`);
+      console.warn(`        - https://*.vercel.app (any Vercel deployment)`);
+      console.warn(`      Main domains:`);
+      console.warn(`        - https://cafes-20-main-nias.vercel.app`);
+      console.warn(`        - https://cafes-20-main.vercel.app`);
       callback(new Error(`Origin ${sanitizedOrigin} not allowed by CORS`));
     }
   },
