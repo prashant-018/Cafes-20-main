@@ -51,7 +51,8 @@ export default function Index() {
         <Contact />
       </section>
 
-      {/* Floating WhatsApp CTA for Mobile */}
+      {/* Floating WhatsApp CTA - Hidden (replaced by FAB in Navbar) */}
+      {/* 
       <motion.div
         initial={{ y: 100 }}
         animate={{ y: 0 }}
@@ -66,6 +67,7 @@ export default function Index() {
           Order on WhatsApp
         </button>
       </motion.div>
+      */}
     </div>
   );
 }

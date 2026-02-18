@@ -178,9 +178,9 @@ const MenuHighlights = () => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => orderOnWhatsApp(item.name)}
-                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 shadow-lg transition-colors duration-200"
+                    className="bg-[#111111] border border-[#25D366] hover:bg-[#25D366]/10 text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 shadow-lg transition-all duration-300"
                   >
-                    <MessageCircle className="w-4 h-4" />
+                    <MessageCircle className="w-4 h-4 text-[#25D366]" />
                     Order Now
                   </motion.button>
                 </div>

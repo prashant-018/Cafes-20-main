@@ -16,6 +16,57 @@ interface User {
   role?: 'user' | 'admin';
 }
 
+// Floating WhatsApp FAB Component
+function FloatingWhatsAppFAB({ whatsappNumber }: { whatsappNumber: string }) {
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      // Show button when scrolling up, hide when scrolling down
+      if (currentScrollY < lastScrollY || currentScrollY < 100) {
+        setIsVisible(true);
+      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsVisible(false);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
+
+  return (
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0, opacity: 0 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+          className="fixed bottom-6 right-6 z-50"
+        >
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => window.open(`https://wa.me/${whatsappNumber}`, '_blank')}
+            className="w-14 h-14 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow duration-300"
+            style={{
+              boxShadow: '0 4px 20px rgba(37, 211, 102, 0.4)'
+            }}
+            aria-label="Order on WhatsApp"
+          >
+            <MessageCircle className="w-7 h-7 text-white" />
+          </motion.button>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 export function Navbar() {
   const { settings } = useSettings();
   const [isScrolled, setIsScrolled] = useState(false);
