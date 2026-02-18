@@ -1,93 +1,186 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
-import { ArrowLeft, MessageCircle, Leaf, Search, X, ZoomIn, Loader2, ImageOff } from "lucide-react";
+import {
+  ArrowLeft,
+  MessageCircle,
+  Leaf,
+  Search,
+  X
+} from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
-import { useMenuImages } from "@/hooks/useMenuImages";
+import { menuData, MenuItem } from "@/data/menuData";
 
-// Default products to show when no images are uploaded
-const DEFAULT_PRODUCTS = [
-  {
-    id: 1,
-    name: "Himalayan Special",
-    price: 499,
-    description: "Our signature pizza with exotic Himalayan flavors and premium toppings",
-    image: "https://images.pexels.com/photos/2762938/pexels-photo-2762938.jpeg",
-    isVeg: true
-  },
-  {
-    id: 2,
-    name: "Veg Supreme",
-    price: 449,
-    description: "Loaded with fresh vegetables, olives, and premium cheese blend",
-    image: "https://images.pexels.com/photos/845811/pexels-photo-845811.jpeg",
-    isVeg: true
-  },
-  {
-    id: 3,
-    name: "Farm Fresh",
-    price: 459,
-    description: "Garden-fresh vegetables with herbs and mozzarella cheese",
-    image: "https://images.pexels.com/photos/905847/pexels-photo-905847.jpeg",
-    isVeg: true
-  },
-  {
-    id: 4,
-    name: "BBQ Paneer",
-    price: 529,
-    description: "Smoky BBQ paneer with onions, peppers, and special sauce",
-    image: "https://images.pexels.com/photos/10790638/pexels-photo-10790638.jpeg",
-    isVeg: true
-  },
-  {
-    id: 5,
-    name: "Paneer Makhani",
-    price: 499,
-    description: "Creamy paneer makhani with bell peppers and Indian spices",
-    image: "https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg",
-    isVeg: true
-  },
-  {
-    id: 6,
-    name: "4 Cheese",
-    price: 599,
-    description: "Four premium cheeses melted to perfection on crispy crust",
-    image: "https://images.pexels.com/photos/1279330/pexels-photo-1279330.jpeg",
-    isVeg: true
-  }
-];
+// Interface for admin-added items
+interface AdminMenuItem {
+  id?: string;
+  name: string;
+  category: string;
+  description: string;
+  isVeg: boolean;
+  pricing: {
+    small?: number;
+    medium?: number;
+    large?: number;
+    single?: number;
+  };
+  image: string;
+  isAvailable: boolean;
+  isPopular?: boolean;
+}
 
 export default function Menu() {
   const { settings } = useSettings();
-  const { images: menuImages, loading, error } = useMenuImages(false);
   const whatsappNumberDigits = (settings?.whatsappNumber || "+918305385083").replace(/\D/g, "");
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [showFullMenu, setShowFullMenu] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [adminMenuItems, setAdminMenuItems] = useState<AdminMenuItem[]>([]);
 
-  // Use uploaded images if available, otherwise use default products
-  const displayProducts = menuImages.length > 0 ? menuImages : DEFAULT_PRODUCTS;
+  // Load admin-added menu items from localStorage
+  useEffect(() => {
+    const loadMenuItems = () => {
+      const saved = localStorage.getItem('adminMenuItems');
+      if (saved) {
+        try {
+          const items = JSON.parse(saved);
+          // Filter for available items and remove duplicates by id
+          const uniqueItems = items
+            .filter((item: AdminMenuItem) => item.isAvailable)
+            .filter((item: AdminMenuItem, index: number, self: AdminMenuItem[]) =>
+              index === self.findIndex((t) => t.id === item.id)
+            );
+          setAdminMenuItems(uniqueItems);
+        } catch (error) {
+          console.error('Failed to load admin menu items:', error);
+        }
+      }
+    };
 
-  console.log('📊 Menu Display Logic:', {
-    uploadedImagesCount: menuImages.length,
-    defaultProductsCount: DEFAULT_PRODUCTS.length,
-    displayingCount: displayProducts.length,
-    usingUploadedImages: menuImages.length > 0
+    loadMenuItems();
+
+    // Listen for storage changes (when admin updates menu)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'adminMenuItems') {
+        loadMenuItems();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // Also check for changes every 2 seconds (for same-tab updates)
+    const interval = setInterval(() => {
+      loadMenuItems();
+    }, 2000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
+
+  // Convert admin items to MenuItem format and merge with static data
+  const convertAdminItemToMenuItem = (adminItem: AdminMenuItem): MenuItem => {
+    return {
+      id: adminItem.id || '',
+      name: adminItem.name,
+      description: adminItem.description,
+      price: {
+        regular: adminItem.pricing.single,
+        medium: adminItem.pricing.medium,
+        large: adminItem.pricing.large
+      },
+      image: adminItem.image,
+      isVeg: adminItem.isVeg,
+      category: adminItem.category,
+      isPopular: adminItem.isPopular
+    };
+  };
+
+  // Merge static menu data with admin-added items
+  const mergedMenuData = [...menuData];
+
+  // Debug logging
+  console.log('📊 Menu Data Merge:', {
+    staticCategories: menuData.length,
+    adminItems: adminMenuItems.length,
+    adminItemsDetails: adminMenuItems.map(i => ({ name: i.name, category: i.category, id: i.id }))
   });
 
-  // Filter based on search
-  const filteredProducts = displayProducts.filter(item =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Group admin items by category and add to merged data
+  adminMenuItems.forEach(adminItem => {
+    // Find matching category (case-insensitive)
+    const existingCategory = mergedMenuData.find(cat =>
+      cat.name.toLowerCase() === adminItem.category.toLowerCase()
+    );
+    const menuItem = convertAdminItemToMenuItem(adminItem);
+
+    if (existingCategory) {
+      // Add to existing category (check for duplicates)
+      const isDuplicate = existingCategory.items.some(item => item.id === menuItem.id);
+      if (!isDuplicate) {
+        existingCategory.items.push(menuItem);
+        console.log(`✅ Added "${menuItem.name}" to existing category "${existingCategory.name}"`);
+      } else {
+        console.log(`⚠️ Skipped duplicate "${menuItem.name}" in "${existingCategory.name}"`);
+      }
+    } else {
+      // Create new category
+      const newCategory = {
+        id: adminItem.category.toLowerCase().replace(/\s+/g, '-'),
+        name: adminItem.category,
+        description: `Delicious ${adminItem.category.toLowerCase()}`,
+        icon: '🍽️',
+        items: [menuItem]
+      };
+      mergedMenuData.push(newCategory);
+      console.log(`✨ Created new category "${newCategory.name}" with "${menuItem.name}"`);
+    }
+  });
+
+  // Filter items based on search and category
+  const filteredCategories = mergedMenuData.map(category => ({
+    ...category,
+    items: category.items.filter(item => {
+      const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = selectedCategory === "all" || category.id === selectedCategory;
+      return matchesSearch && matchesCategory;
+    })
+  })).filter(category => category.items.length > 0);
+
+  // WhatsApp order function
+  const orderOnWhatsApp = (item: MenuItem) => {
+    const priceText = item.price.medium
+      ? `Medium: ₹${item.price.medium}, Large: ₹${item.price.large}`
+      : `₹${item.price.regular}`;
+
+    const message = `Hi! I'd like to order:\n\n${item.name}\n${item.description}\nPrice: ${priceText}\n\nPlease confirm availability and delivery details.`;
+    const whatsappUrl = `https://wa.me/${whatsappNumberDigits}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  // Format price display
+  const formatPrice = (price: MenuItem['price']) => {
+    if (price.medium) {
+      return (
+        <div className="flex flex-col">
+          <span className="text-yellow-400 font-bold text-lg">₹{price.medium}</span>
+          <span className="text-gray-400 text-xs">Medium</span>
+        </div>
+      );
+    }
+    return <span className="text-yellow-400 font-bold text-xl">₹{price.regular}</span>;
+  };
 
   return (
     <div className="relative pt-8 pb-12 min-h-screen bg-background">
       {/* Header */}
-      <div className="max-w-7xl mx-auto px-6 mb-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-8">
         <div className="flex items-center justify-between mb-6">
           <Link to="/">
             <Button variant="ghost" className="text-white hover:text-primary gap-2">
@@ -102,11 +195,11 @@ export default function Menu() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
-          <h1 className="text-4xl md:text-6xl font-serif font-bold text-white mb-4">
-            Our Full <span className="text-primary italic">Menu</span>
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-serif font-bold text-white mb-4">
+            Complete <span className="text-primary italic">Menu</span>
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Authentic Himalayan flavors crafted with love in Jabalpur
+          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
+            Explore our full range of delicious offerings
           </p>
         </motion.div>
 
@@ -115,381 +208,266 @@ export default function Menu() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="relative max-w-md mx-auto mb-8"
+          className="relative max-w-md mx-auto mb-6"
         >
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-          <input
+          <Input
             type="text"
             placeholder="Search menu items..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-12 pr-4 py-3 bg-card border border-white/10 rounded-full text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors"
           />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </motion.div>
-      </div>
 
-      {/* Best 6 Items Section */}
-      <div className="max-w-7xl mx-auto px-6 mb-16">
+        {/* Category Filter */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
+          transition={{ delay: 0.2 }}
+          className="flex gap-2 overflow-x-auto pb-4 no-scrollbar"
         >
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-white mb-4">
-            Our <span className="text-primary">Menu Gallery</span>
-          </h2>
-          <p className="text-muted-foreground text-lg">
-            Fresh menu images uploaded by our team
-          </p>
-        </motion.div>
-
-        {/* Loading State */}
-        {loading && (
-          <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
-            <p className="text-muted-foreground">Loading menu...</p>
-          </div>
-        )}
-
-        {/* Products Grid */}
-        {!loading && filteredProducts.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.map((product, index) => (
-              <motion.div
-                key={product.id}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -8, scale: 1.02 }}
-                className="bg-card rounded-2xl overflow-hidden border border-white/5 group cursor-pointer shadow-xl hover:shadow-2xl transition-all duration-300"
-                onClick={() => setSelectedProduct(product)}
-              >
-                {/* Image Container */}
-                <div className="relative h-[300px] overflow-hidden">
-                  <motion.img
-                    whileHover={{ scale: 1.1 }}
-                    transition={{ duration: 0.6 }}
-                    src={'image' in product ? product.image : product.url}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-
-                  {/* Veg Badge */}
-                  {'isVeg' in product && product.isVeg && (
-                    <div className="absolute top-3 right-3">
-                      <Badge className="bg-green-600 hover:bg-green-700 border-2 border-green-500 text-white font-semibold px-3 py-1 shadow-lg">
-                        <Leaf className="w-3 h-3 mr-1" />
-                        VEG
-                      </Badge>
-                    </div>
-                  )}
-
-                  {/* Hover overlay */}
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <div className="bg-white/20 backdrop-blur-sm rounded-full p-4">
-                      <ZoomIn className="w-8 h-8 text-white" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-6">
-                  <h3 className="text-lg font-bold text-white group-hover:text-primary transition-colors line-clamp-2 mb-2">
-                    {product.name}
-                  </h3>
-
-                  {/* Description (only for default products) */}
-                  {'description' in product && (
-                    <p className="text-gray-400 text-sm mb-3 line-clamp-2">
-                      {product.description}
-                    </p>
-                  )}
-
-                  {/* Price (only for default products) */}
-                  {'price' in product && (
-                    <div className="mb-4">
-                      <span className="text-2xl font-bold text-yellow-400">
-                        ₹{product.price}
-                      </span>
-                    </div>
-                  )}
-
-                  <Button
-                    className="w-full bg-green-600 hover:bg-green-700 text-white border-0 rounded-xl py-3 transition-all"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const message = `Hi, I want to order ${product.name}`;
-                      const whatsappUrl = `https://wa.me/${whatsappNumberDigits}?text=${encodeURIComponent(message)}`;
-                      window.open(whatsappUrl, '_blank');
-                    }}
-                  >
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Order on WhatsApp
-                  </Button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
-
-        {/* Empty State */}
-        {!loading && filteredProducts.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-20">
-            <ImageOff className="w-16 h-16 text-muted-foreground mb-4" />
-            <p className="text-white text-lg mb-2">No menu items found</p>
-            <p className="text-muted-foreground text-sm">
-              {searchTerm ? "Try a different search term" : "Menu items will appear here soon"}
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Divider */}
-      <div className="max-w-7xl mx-auto px-6 mb-16">
-        <div className="flex items-center gap-4">
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-          <div className="text-white/60 text-sm font-medium">OR</div>
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-        </div>
-      </div>
-
-      {/* Complete Price List Section */}
-      <div className="max-w-7xl mx-auto px-6 mb-16">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-white mb-4">
-            📜 Complete Price List
-          </h2>
-          <p className="text-muted-foreground text-lg mb-8">
-            Tap to zoom / save the menu
-          </p>
-
-          {/* Menu Image */}
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="relative cursor-pointer group max-w-2xl mx-auto"
-            onClick={() => setShowFullMenu(true)}
+          <Button
+            variant={selectedCategory === "all" ? "default" : "outline"}
+            onClick={() => setSelectedCategory("all")}
+            className={`rounded-full whitespace-nowrap ${selectedCategory === "all"
+              ? "bg-primary text-white"
+              : "border-white/10 text-white hover:bg-white/10"
+              }`}
           >
-            <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl">
-              <img
-                src="/menu.png"
-                alt="Complete Menu Price List"
-                className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105"
-                onError={(e) => {
-                  // Fallback if menu.png doesn't exist
-                  e.currentTarget.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDgwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjMUExQTFBIi8+Cjx0ZXh0IHg9IjQwMCIgeT0iMjgwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSIzNiIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIj7wn5OQIE1lbnUgQ29taW5nIFNvb24uLi48L3RleHQ+Cjx0ZXh0IHg9IjQwMCIgeT0iMzQwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTk5IiBmb250LXNpemU9IjE4IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiPlBsZWFzZSBhZGQgbWVudS5wbmcgdG8gcHVibGljIGZvbGRlcjwvdGV4dD4KPC9zdmc+";
-                }}
-              />
-
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                <div className="bg-white/20 backdrop-blur-sm rounded-full p-4">
-                  <ZoomIn className="w-8 h-8 text-white" />
-                </div>
-              </div>
-            </div>
-
-            <p className="text-white/60 text-sm mt-4">
-              Click to view full size menu
-            </p>
-          </motion.div>
-        </motion.div>
-      </div>
-
-
-
-      {/* Full Menu Modal */}
-      <AnimatePresence>
-        {selectedImage && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
-            onClick={() => setSelectedImage(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="relative max-w-4xl max-h-[90vh] w-full"
-              onClick={(e) => e.stopPropagation()}
+            All Items
+          </Button>
+          {mergedMenuData.map((category) => (
+            <Button
+              key={category.id}
+              variant={selectedCategory === category.id ? "default" : "outline"}
+              onClick={() => setSelectedCategory(category.id)}
+              className={`rounded-full whitespace-nowrap ${selectedCategory === category.id
+                ? "bg-primary text-white"
+                : "border-white/10 text-white hover:bg-white/10"
+                }`}
             >
-              {/* Close Button */}
-              <button
-                onClick={() => setSelectedImage(null)}
-                className="absolute -top-12 right-0 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-colors duration-200 z-10"
-              >
-                <X className="w-6 h-6" />
-              </button>
+              {category.icon} {category.name}
+            </Button>
+          ))}
+        </motion.div>
+      </div>
 
-              {/* Menu Image */}
-              <div className="relative overflow-hidden rounded-2xl">
-                <img
-                  src={selectedImage}
-                  alt="Menu Image"
-                  className="w-full h-auto object-contain max-h-[85vh]"
-                />
+      {/* Menu Categories */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        {filteredCategories.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-white text-lg mb-2">No items found</p>
+            <p className="text-muted-foreground">Try a different search term or category</p>
+          </div>
+        ) : (
+          filteredCategories.map((category, categoryIndex) => (
+            <motion.div
+              key={category.id}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: categoryIndex * 0.1 }}
+              className="mb-16"
+            >
+              {/* Category Header */}
+              <div className="mb-8">
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-4xl">{category.icon}</span>
+                  <h2 className="text-2xl sm:text-3xl font-serif font-bold text-white">
+                    {category.name}
+                  </h2>
+                  <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30">
+                    {category.items.length} items
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground ml-14">{category.description}</p>
               </div>
 
-              {/* Instructions */}
-              <div className="text-center mt-4">
-                <p className="text-white/80 text-sm">
-                  Pinch to zoom on mobile • Right-click to save image
-                </p>
+              {/* Items Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                {category.items.map((item, itemIndex) => (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: itemIndex * 0.05 }}
+                    whileHover={{ scale: 1.02 }}
+                    className="bg-card rounded-2xl overflow-hidden border border-white/5 hover:border-primary/30 transition-all duration-300 group cursor-pointer"
+                    onClick={() => setSelectedItem(item)}
+                  >
+                    <div className="flex gap-4 p-4">
+                      {/* Image */}
+                      <div className="relative w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 rounded-xl overflow-hidden">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        />
+                        {item.isVeg && (
+                          <div className="absolute top-2 right-2">
+                            <Badge className="bg-green-600 border-green-500 text-white px-2 py-0.5 text-xs">
+                              <Leaf className="w-3 h-3" />
+                            </Badge>
+                          </div>
+                        )}
+                        {item.isPopular && (
+                          <div className="absolute top-2 left-2">
+                            <Badge className="bg-yellow-600 border-yellow-500 text-white px-2 py-0.5 text-xs">
+                              ⭐
+                            </Badge>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0 flex flex-col justify-between">
+                        <div>
+                          <h3 className="text-base sm:text-lg font-bold text-white mb-1 group-hover:text-primary transition-colors line-clamp-1">
+                            {item.name}
+                          </h3>
+                          <p className="text-gray-400 text-xs sm:text-sm line-clamp-2 mb-2">
+                            {item.description}
+                          </p>
+                        </div>
+
+                        <div className="flex items-end justify-between gap-2">
+                          {/* Price */}
+                          <div>
+                            {formatPrice(item.price)}
+                            {item.price.large && (
+                              <div className="mt-1">
+                                <span className="text-yellow-400 font-bold text-sm">₹{item.price.large}</span>
+                                <span className="text-gray-400 text-xs ml-1">Large</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Order Button */}
+                          <Button
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700 text-white border-0 rounded-lg px-3 py-2 text-xs sm:text-sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              orderOnWhatsApp(item);
+                            }}
+                          >
+                            <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                            Order
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
             </motion.div>
-          </motion.div>
+          ))
         )}
-      </AnimatePresence>
+      </div>
 
-      {/* Product Detail Modal */}
+      {/* Item Detail Modal */}
       <AnimatePresence>
-        {selectedProduct && (
+        {selectedItem && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
-            onClick={() => setSelectedProduct(null)}
+            onClick={() => setSelectedItem(null)}
           >
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="relative max-w-4xl w-full bg-card rounded-2xl overflow-hidden"
+              className="relative max-w-2xl w-full bg-card rounded-2xl overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Close Button */}
               <button
-                onClick={() => setSelectedProduct(null)}
+                onClick={() => setSelectedItem(null)}
                 className="absolute top-4 right-4 w-10 h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors duration-200 z-10"
               >
                 <X className="w-6 h-6" />
               </button>
 
               <div className="grid md:grid-cols-2 gap-0">
-                {/* Product Image */}
+                {/* Item Image */}
                 <div className="relative aspect-square overflow-hidden">
                   <img
-                    src={'image' in selectedProduct ? selectedProduct.image : selectedProduct.url}
-                    alt={selectedProduct.name}
+                    src={selectedItem.image}
+                    alt={selectedItem.name}
                     className="w-full h-full object-cover"
                   />
-
-                  {/* Veg Badge */}
-                  {'isVeg' in selectedProduct && selectedProduct.isVeg && (
-                    <div className="absolute top-4 left-4">
-                      <Badge className="bg-green-600 hover:bg-green-700 border-2 border-green-500 text-white font-semibold px-4 py-2 shadow-lg text-base">
-                        <Leaf className="w-4 h-4 mr-2" />
+                  <div className="absolute top-4 left-4 flex gap-2">
+                    {selectedItem.isVeg && (
+                      <Badge className="bg-green-600 border-green-500 text-white">
+                        <Leaf className="w-4 h-4 mr-1" />
                         VEG
                       </Badge>
-                    </div>
-                  )}
+                    )}
+                    {selectedItem.isPopular && (
+                      <Badge className="bg-yellow-600 border-yellow-500 text-white">
+                        ⭐ Popular
+                      </Badge>
+                    )}
+                  </div>
                 </div>
 
-                {/* Product Details */}
-                <div className="p-8 flex flex-col justify-between">
+                {/* Item Details */}
+                <div className="p-6 sm:p-8 flex flex-col justify-between">
                   <div>
-                    <h2 className="text-3xl font-bold text-white mb-4">
-                      {selectedProduct.name}
+                    <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+                      {selectedItem.name}
                     </h2>
-
-                    {'description' in selectedProduct && (
-                      <p className="text-gray-400 text-lg mb-6 leading-relaxed">
-                        {selectedProduct.description}
-                      </p>
-                    )}
-
-                    {'price' in selectedProduct && (
-                      <div className="mb-8">
-                        <span className="text-4xl font-bold text-yellow-400">
-                          ₹{selectedProduct.price}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="space-y-3">
-                    <Button
-                      className="w-full bg-green-600 hover:bg-green-700 text-white border-0 rounded-xl py-6 text-lg transition-all"
-                      onClick={() => {
-                        const message = `Hi, I want to order ${selectedProduct.name}`;
-                        const whatsappUrl = `https://wa.me/${whatsappNumberDigits}?text=${encodeURIComponent(message)}`;
-                        window.open(whatsappUrl, '_blank');
-                      }}
-                    >
-                      <MessageCircle className="w-5 h-5 mr-2" />
-                      Order on WhatsApp
-                    </Button>
-
-                    <p className="text-center text-gray-500 text-sm">
-                      Click to order via WhatsApp
+                    <p className="text-gray-400 text-base sm:text-lg mb-6 leading-relaxed">
+                      {selectedItem.description}
                     </p>
+
+                    {/* Price */}
+                    <div className="mb-6">
+                      {selectedItem.price.medium ? (
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                            <span className="text-white">Medium</span>
+                            <span className="text-yellow-400 font-bold text-xl">₹{selectedItem.price.medium}</span>
+                          </div>
+                          <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                            <span className="text-white">Large</span>
+                            <span className="text-yellow-400 font-bold text-xl">₹{selectedItem.price.large}</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                          <span className="text-white">Price</span>
+                          <span className="text-yellow-400 font-bold text-2xl">₹{selectedItem.price.regular}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
+
+                  {/* Order Button */}
+                  <Button
+                    className="w-full bg-green-600 hover:bg-green-700 text-white border-0 rounded-xl py-6 text-lg transition-all"
+                    onClick={() => orderOnWhatsApp(selectedItem)}
+                  >
+                    <MessageCircle className="w-5 h-5 mr-2" />
+                    Order on WhatsApp
+                  </Button>
                 </div>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Full Menu Price List Modal */}
-      <AnimatePresence>
-        {showFullMenu && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4"
-            onClick={() => setShowFullMenu(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="relative max-w-6xl max-h-[95vh] w-full"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Close Button */}
-              <button
-                onClick={() => setShowFullMenu(false)}
-                className="absolute -top-12 right-0 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-colors duration-200 z-10"
-              >
-                <X className="w-7 h-7" />
-              </button>
-
-              {/* Full Menu Image */}
-              <div className="relative overflow-hidden rounded-2xl bg-white">
-                <img
-                  src="/menu.png"
-                  alt="Complete Menu Price List"
-                  className="w-full h-auto object-contain max-h-[90vh]"
-                  onError={(e) => {
-                    e.currentTarget.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDgwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjMUExQTFBIi8+Cjx0ZXh0IHg9IjQwMCIgeT0iMjgwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSIzNiIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIj7wn5OQIE1lbnUgQ29taW5nIFNvb24uLi48L3RleHQ+Cjx0ZXh0IHg9IjQwMCIgeT0iMzQwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTk5IiBmb250LXNpemU9IjE4IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiPlBsZWFzZSBhZGQgbWVudS5wbmcgdG8gcHVibGljIGZvbGRlcjwvdGV4dD4KPC9zdmc+";
-                  }}
-                />
-              </div>
-
-              {/* Instructions */}
-              <div className="text-center mt-4">
-                <p className="text-white/80 text-sm">
-                  Pinch to zoom on mobile • Right-click to save • Scroll to see full menu
-                </p>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div >
+    </div>
   );
 }

@@ -16,8 +16,8 @@ export default function AdminLoginSignin() {
   const navigate = useNavigate();
 
   const [adminData, setAdminData] = useState({
-    email: "admin@gmail.com", // Match the backend admin email
-    password: "prashant123", // Match the backend admin password
+    email: "",
+    password: "",
     secretKey: ""
   });
 
@@ -40,7 +40,7 @@ export default function AdminLoginSignin() {
         // Redirect to admin dashboard
         navigate('/admin/dashboard', { replace: true });
       } else {
-        setMessage({ type: 'error', text: data.message || 'Admin login failed' });
+        setMessage({ type: 'error', text: data.message || 'Invalid credentials' });
       }
     } catch (error: any) {
       console.error('Admin login error:', error);
@@ -121,19 +121,20 @@ export default function AdminLoginSignin() {
               </motion.div>
             )}
 
-            <form onSubmit={handleAdminLogin} className="space-y-4">
+            <form onSubmit={handleAdminLogin} className="space-y-4" autoComplete="off">
               <div className="space-y-2">
                 <Label htmlFor="admin-email" className="text-white">Email / Username</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     id="admin-email"
+                    name="admin-email"
                     type="email"
-                    placeholder="admin@gmail.com"
+                    placeholder="Enter admin email"
                     value={adminData.email}
                     onChange={(e) => setAdminData(prev => ({ ...prev, email: e.target.value }))}
                     className="pl-10 bg-secondary/20 border-white/10 text-white placeholder:text-muted-foreground"
-                    autoComplete="username"
+                    autoComplete="new-email"
                     required
                   />
                 </div>
@@ -145,12 +146,13 @@ export default function AdminLoginSignin() {
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     id="admin-password"
+                    name="admin-password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
+                    placeholder="Enter admin password"
                     value={adminData.password}
                     onChange={(e) => setAdminData(prev => ({ ...prev, password: e.target.value }))}
                     className="pl-10 pr-10 bg-secondary/20 border-white/10 text-white placeholder:text-muted-foreground"
-                    autoComplete="current-password"
+                    autoComplete="new-password"
                     required
                   />
                   <button

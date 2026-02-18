@@ -44,24 +44,48 @@
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+    /* Account for fixed navbar */
+  }
+
   body {
     @apply bg-background text-foreground font-sans selection:bg-primary/30;
     font-family: 'Manrope', sans-serif;
   }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    font-family: 'Playfair Display', serif;
+  /* Ensure sections take full viewport height */
+  section {
+    position: relative;
   }
 
-  :where(p, span, li, h1, h2, h3, h4, h5, h6, a, button, label, td, th) {
-    overflow-wrap: anywhere;
-    word-break: break-word;
+  /* Optional: Add scroll snap for cleaner section transitions */
+  /* Uncomment if you want snap scrolling */
+  /*
+  html {
+    scroll-snap-type: y mandatory;
   }
+  
+  section {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+  */
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Playfair Display', serif;
+}
+
+:where(p, span, li, h1, h2, h3, h4, h5, h6, a, button, label, td, th) {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 @layer utilities {

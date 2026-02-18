@@ -1,18 +1,69 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Search, X, ZoomIn } from "lucide-react";
-import { ProductGrid } from "@/components/menu/ProductGrid";
+import {
+  ArrowLeft,
+  MessageCircle,
+  Leaf,
+  Search,
+  Filter,
+  X,
+  ShoppingCart
+} from "lucide-react";
+import { useSettings } from "@/contexts/SettingsContext";
+import { menuData, MenuItem, MenuCategory } from "@/data/menuData";
 
 export default function MenuProducts() {
+  const { settings } = useSettings();
+  const whatsappNumberDigits = (settings?.whatsappNumber || "+918305385083").replace(/\D/g, "");
+
   const [searchTerm, setSearchTerm] = useState("");
-  const [showFullMenu, setShowFullMenu] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [cart, setCart] = useState<MenuItem[]>([]);
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+
+  // Filter items based on search and category
+  const filteredCategories = menuData.map(category => ({
+    ...category,
+    items: category.items.filter(item => {
+      const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = selectedCategory === "all" || category.id === selectedCategory;
+      return matchesSearch && matchesCategory;
+    })
+  })).filter(category => category.items.length > 0);
+
+  // WhatsApp order function
+  const orderOnWhatsApp = (item: MenuItem) => {
+    const priceText = item.price.medium
+      ? `Medium: ₹${item.price.medium}, Large: ₹${item.price.large}`
+      : `₹${item.price.regular}`;
+
+    const message = `Hi! I'd like to order:\n\n${item.name}\n${item.description}\nPrice: ${priceText}\n\nPlease confirm availability and delivery details.`;
+    const whatsappUrl = `https://wa.me/${whatsappNumberDigits}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  // Format price display
+  const formatPrice = (price: MenuItem['price']) => {
+    if (price.medium) {
+      return (
+        <div className="flex flex-col">
+          <span className="text-yellow-400 font-bold text-lg">₹{price.medium}</span>
+          <span className="text-gray-400 text-xs">Medium</span>
+        </div>
+      );
+    }
+    return <span className="text-yellow-400 font-bold text-xl">₹{price.regular}</span>;
+  };
 
   return (
     <div className="relative pt-8 pb-12 min-h-screen bg-background">
       {/* Header */}
-      <div className="max-w-7xl mx-auto px-6 mb-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-8">
         <div className="flex items-center justify-between mb-6">
           <Link to="/">
             <Button variant="ghost" className="text-white hover:text-primary gap-2">
@@ -27,11 +78,11 @@ export default function MenuProducts() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
-          <h1 className="text-4xl md:text-6xl font-serif font-bold text-white mb-4">
-            Our <span className="text-primary italic">Menu</span>
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-serif font-bold text-white mb-4">
+            Complete <span className="text-primary italic">Menu</span>
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Authentic Himalayan flavors crafted with love in Jabalpur
+          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
+            Explore our full range of delicious offerings
           </p>
         </motion.div>
 
@@ -40,135 +91,261 @@ export default function MenuProducts() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="relative max-w-md mx-auto mb-8"
+          className="relative max-w-md mx-auto mb-6"
         >
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-          <input
+          <Input
             type="text"
             placeholder="Search menu items..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-12 pr-4 py-3 bg-card border border-white/10 rounded-full text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors"
           />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </motion.div>
-      </div>
 
-      {/* Product Grid Section */}
-      <div className="max-w-7xl mx-auto px-6 mb-16">
+        {/* Category Filter */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
+          transition={{ delay: 0.2 }}
+          className="flex gap-2 overflow-x-auto pb-4 no-scrollbar"
         >
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-white mb-4">
-            Featured <span className="text-primary">Pizzas</span>
-          </h2>
-          <p className="text-muted-foreground text-lg">
-            Handcrafted with premium ingredients and Himalayan spices
-          </p>
-        </motion.div>
-
-        {/* Product Cards Grid */}
-        <ProductGrid />
-      </div>
-
-      {/* Divider */}
-      <div className="max-w-7xl mx-auto px-6 mb-16">
-        <div className="flex items-center gap-4">
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-          <div className="text-white/60 text-sm font-medium">OR</div>
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-        </div>
-      </div>
-
-      {/* Complete Price List Section */}
-      <div className="max-w-7xl mx-auto px-6 mb-16">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-white mb-4">
-            📜 Complete Price List
-          </h2>
-          <p className="text-muted-foreground text-lg mb-8">
-            Tap to zoom / save the menu
-          </p>
-
-          {/* Menu Image */}
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="relative cursor-pointer group max-w-2xl mx-auto"
-            onClick={() => setShowFullMenu(true)}
+          <Button
+            variant={selectedCategory === "all" ? "default" : "outline"}
+            onClick={() => setSelectedCategory("all")}
+            className={`rounded-full whitespace-nowrap ${selectedCategory === "all"
+                ? "bg-primary text-white"
+                : "border-white/10 text-white hover:bg-white/10"
+              }`}
           >
-            <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl">
-              <img
-                src="/menu.png"
-                alt="Complete Menu Price List"
-                className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105"
-                onError={(e) => {
-                  // Fallback if menu.png doesn't exist
-                  (e.currentTarget as HTMLImageElement).src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDgwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjMUExQTFBIi8+Cjx0ZXh0IHg9IjQwMCIgeT0iMjgwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSIzNiIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIj7wn5OQIE1lbnUgQ29taW5nIFNvb24uLi48L3RleHQ+Cjx0ZXh0IHg9IjQwMCIgeT0iMzQwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTk5IiBmb250LXNpemU9IjE4IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiPlBsZWFzZSBhZGQgbWVudS5wbmcgdG8gcHVibGljIGZvbGRlcjwvdGV4dD4KPC9zdmc+";
-                }}
-              />
-
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                <div className="bg-white/20 backdrop-blur-sm rounded-full p-4">
-                  <ZoomIn className="w-8 h-8 text-white" />
-                </div>
-              </div>
-            </div>
-
-            <p className="text-white/60 text-sm mt-4">
-              Click to view full size menu
-            </p>
-          </motion.div>
+            All Items
+          </Button>
+          {menuData.map((category) => (
+            <Button
+              key={category.id}
+              variant={selectedCategory === category.id ? "default" : "outline"}
+              onClick={() => setSelectedCategory(category.id)}
+              className={`rounded-full whitespace-nowrap ${selectedCategory === category.id
+                  ? "bg-primary text-white"
+                  : "border-white/10 text-white hover:bg-white/10"
+                }`}
+            >
+              {category.icon} {category.name}
+            </Button>
+          ))}
         </motion.div>
       </div>
 
-      {/* Full Menu Modal */}
+      {/* Menu Categories */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        {filteredCategories.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-white text-lg mb-2">No items found</p>
+            <p className="text-muted-foreground">Try a different search term or category</p>
+          </div>
+        ) : (
+          filteredCategories.map((category, categoryIndex) => (
+            <motion.div
+              key={category.id}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: categoryIndex * 0.1 }}
+              className="mb-16"
+            >
+              {/* Category Header */}
+              <div className="mb-8">
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-4xl">{category.icon}</span>
+                  <h2 className="text-2xl sm:text-3xl font-serif font-bold text-white">
+                    {category.name}
+                  </h2>
+                  <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30">
+                    {category.items.length} items
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground ml-14">{category.description}</p>
+              </div>
+
+              {/* Items Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                {category.items.map((item, itemIndex) => (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: itemIndex * 0.05 }}
+                    whileHover={{ scale: 1.02 }}
+                    className="bg-card rounded-2xl overflow-hidden border border-white/5 hover:border-primary/30 transition-all duration-300 group cursor-pointer"
+                    onClick={() => setSelectedItem(item)}
+                  >
+                    <div className="flex gap-4 p-4">
+                      {/* Image */}
+                      <div className="relative w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 rounded-xl overflow-hidden">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        />
+                        {item.isVeg && (
+                          <div className="absolute top-2 right-2">
+                            <Badge className="bg-green-600 border-green-500 text-white px-2 py-0.5 text-xs">
+                              <Leaf className="w-3 h-3" />
+                            </Badge>
+                          </div>
+                        )}
+                        {item.isPopular && (
+                          <div className="absolute top-2 left-2">
+                            <Badge className="bg-yellow-600 border-yellow-500 text-white px-2 py-0.5 text-xs">
+                              ⭐
+                            </Badge>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0 flex flex-col justify-between">
+                        <div>
+                          <h3 className="text-base sm:text-lg font-bold text-white mb-1 group-hover:text-primary transition-colors line-clamp-1">
+                            {item.name}
+                          </h3>
+                          <p className="text-gray-400 text-xs sm:text-sm line-clamp-2 mb-2">
+                            {item.description}
+                          </p>
+                        </div>
+
+                        <div className="flex items-end justify-between gap-2">
+                          {/* Price */}
+                          <div>
+                            {formatPrice(item.price)}
+                            {item.price.large && (
+                              <div className="mt-1">
+                                <span className="text-yellow-400 font-bold text-sm">₹{item.price.large}</span>
+                                <span className="text-gray-400 text-xs ml-1">Large</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Order Button */}
+                          <Button
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700 text-white border-0 rounded-lg px-3 py-2 text-xs sm:text-sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              orderOnWhatsApp(item);
+                            }}
+                          >
+                            <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                            Order
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          ))
+        )}
+      </div>
+
+      {/* Item Detail Modal */}
       <AnimatePresence>
-        {showFullMenu && (
+        {selectedItem && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
-            onClick={() => setShowFullMenu(false)}
+            onClick={() => setSelectedItem(null)}
           >
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="relative max-w-4xl max-h-[90vh] w-full"
+              className="relative max-w-2xl w-full bg-card rounded-2xl overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Close Button */}
               <button
-                onClick={() => setShowFullMenu(false)}
-                className="absolute -top-12 right-0 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-colors duration-200 z-10"
+                onClick={() => setSelectedItem(null)}
+                className="absolute top-4 right-4 w-10 h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors duration-200 z-10"
               >
                 <X className="w-6 h-6" />
               </button>
 
-              {/* Menu Image */}
-              <div className="relative overflow-hidden rounded-2xl">
-                <img
-                  src="/menu.png"
-                  alt="Full Menu"
-                  className="w-full h-auto object-contain max-h-[85vh]"
-                />
-              </div>
+              <div className="grid md:grid-cols-2 gap-0">
+                {/* Item Image */}
+                <div className="relative aspect-square overflow-hidden">
+                  <img
+                    src={selectedItem.image}
+                    alt={selectedItem.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-4 left-4 flex gap-2">
+                    {selectedItem.isVeg && (
+                      <Badge className="bg-green-600 border-green-500 text-white">
+                        <Leaf className="w-4 h-4 mr-1" />
+                        VEG
+                      </Badge>
+                    )}
+                    {selectedItem.isPopular && (
+                      <Badge className="bg-yellow-600 border-yellow-500 text-white">
+                        ⭐ Popular
+                      </Badge>
+                    )}
+                  </div>
+                </div>
 
-              {/* Instructions */}
-              <div className="text-center mt-4">
-                <p className="text-white/80 text-sm">
-                  Pinch to zoom on mobile • Right-click to save image
-                </p>
+                {/* Item Details */}
+                <div className="p-6 sm:p-8 flex flex-col justify-between">
+                  <div>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+                      {selectedItem.name}
+                    </h2>
+                    <p className="text-gray-400 text-base sm:text-lg mb-6 leading-relaxed">
+                      {selectedItem.description}
+                    </p>
+
+                    {/* Price */}
+                    <div className="mb-6">
+                      {selectedItem.price.medium ? (
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                            <span className="text-white">Medium</span>
+                            <span className="text-yellow-400 font-bold text-xl">₹{selectedItem.price.medium}</span>
+                          </div>
+                          <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                            <span className="text-white">Large</span>
+                            <span className="text-yellow-400 font-bold text-xl">₹{selectedItem.price.large}</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                          <span className="text-white">Price</span>
+                          <span className="text-yellow-400 font-bold text-2xl">₹{selectedItem.price.regular}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Order Button */}
+                  <Button
+                    className="w-full bg-green-600 hover:bg-green-700 text-white border-0 rounded-xl py-6 text-lg transition-all"
+                    onClick={() => orderOnWhatsApp(selectedItem)}
+                  >
+                    <MessageCircle className="w-5 h-5 mr-2" />
+                    Order on WhatsApp
+                  </Button>
+                </div>
               </div>
             </motion.div>
           </motion.div>

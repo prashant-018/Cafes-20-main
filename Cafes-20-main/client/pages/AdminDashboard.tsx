@@ -35,6 +35,8 @@ import { useMenuImages } from "@/hooks/useMenuImages";
 import { ApiTest } from "@/components/ApiTest";
 import socketService, { SettingsUpdateEvent } from "@/services/socket";
 import { settingsAPI } from "@/services/api";
+import MenuItemForm, { MenuItemData } from "@/components/admin/MenuItemForm";
+import MenuItemsList from "@/components/admin/MenuItemsList";
 
 interface MenuImage {
   id: string;
@@ -69,7 +71,41 @@ export default function AdminDashboard() {
   const [dragActive, setDragActive] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Use the menu images hook for real-time updates
+  // Menu Management State - Load from localStorage
+  const [menuItems, setMenuItems] = useState<MenuItemData[]>(() => {
+    const saved = localStorage.getItem('adminMenuItems');
+    if (saved) {
+      try {
+        const items = JSON.parse(saved);
+        // Remove duplicates by id
+        const uniqueItems = items.filter((item: MenuItemData, index: number, self: MenuItemData[]) =>
+          index === self.findIndex((t: MenuItemData) => t.id === item.id)
+        );
+        // Save cleaned data back
+        if (uniqueItems.length !== items.length) {
+          localStorage.setItem('adminMenuItems', JSON.stringify(uniqueItems));
+        }
+        return uniqueItems;
+      } catch (error) {
+        console.error('Failed to load menu items:', error);
+        return [];
+      }
+    }
+    return [];
+  });
+  const [editingItem, setEditingItem] = useState<MenuItemData | null>(null);
+
+  // Save menu items to localStorage whenever they change
+  useEffect(() => {
+    // Remove duplicates before saving
+    const uniqueItems = menuItems.filter((item, index, self) =>
+      index === self.findIndex((t) => t.id === item.id)
+    );
+    localStorage.setItem('adminMenuItems', JSON.stringify(uniqueItems));
+    console.log('💾 Saved menu items to localStorage:', uniqueItems.length);
+  }, [menuItems]);
+
+  // Use the menu images hook for real-time updates (kept for backward compatibility)
   const {
     images: menuImages,
     loading: imagesLoading,
@@ -368,6 +404,74 @@ export default function AdminDashboard() {
 
     const isCurrentlyOpen = adminData.isOpen && currentTime >= openTime && currentTime <= closeTime;
     return isCurrentlyOpen;
+  };
+
+  // Menu Management Functions
+  const handleAddMenuItem = async (item: MenuItemData) => {
+    try {
+      // Generate a unique ID for the new item
+      const newItem = {
+        ...item,
+        id: Date.now().toString()
+      };
+
+      setMenuItems(prev => [...prev, newItem]);
+      setMessage({ type: 'success', text: 'Menu item added successfully!' });
+      setTimeout(() => setMessage(null), 4000);
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Failed to add menu item' });
+      setTimeout(() => setMessage(null), 4000);
+    }
+  };
+
+  const handleEditMenuItem = async (item: MenuItemData) => {
+    try {
+      setMenuItems(prev =>
+        prev.map(i => (i.id === item.id ? item : i))
+      );
+      setEditingItem(null);
+      setMessage({ type: 'success', text: 'Menu item updated successfully!' });
+      setTimeout(() => setMessage(null), 4000);
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Failed to update menu item' });
+      setTimeout(() => setMessage(null), 4000);
+    }
+  };
+
+  const handleDeleteMenuItem = (id: string) => {
+    try {
+      console.log('🗑️ Deleting menu item:', id);
+      setMenuItems(prev => {
+        const filtered = prev.filter(item => item.id !== id);
+        console.log('📊 Items before delete:', prev.length);
+        console.log('📊 Items after delete:', filtered.length);
+        return filtered;
+      });
+      setMessage({ type: 'success', text: 'Menu item deleted successfully!' });
+      setTimeout(() => setMessage(null), 4000);
+    } catch (error) {
+      console.error('❌ Delete failed:', error);
+      setMessage({ type: 'error', text: 'Failed to delete menu item' });
+      setTimeout(() => setMessage(null), 4000);
+    }
+  };
+
+  const handleToggleAvailability = (id: string, isAvailable: boolean) => {
+    try {
+      setMenuItems(prev =>
+        prev.map(item =>
+          item.id === id ? { ...item, isAvailable } : item
+        )
+      );
+      setMessage({
+        type: 'success',
+        text: `Item marked as ${isAvailable ? 'available' : 'unavailable'}`
+      });
+      setTimeout(() => setMessage(null), 3000);
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Failed to update availability' });
+      setTimeout(() => setMessage(null), 4000);
+    }
   };
 
   return (
@@ -816,184 +920,35 @@ export default function AdminDashboard() {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-6"
             >
-              {/* Menu Images Overview */}
-              <Card className="bg-[#111111] border-gray-800">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3 text-white">
-                    <ImageIcon className="w-5 h-5 text-red-500" />
-                    Menu Images
-                  </CardTitle>
-                  <CardDescription className="text-gray-400">
-                    Upload and manage multiple menu images displayed on your website
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Upload Area */}
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-gray-300 font-medium">Add New Menu Images</Label>
-                      <Badge variant="secondary" className="bg-gray-700 text-gray-300">
-                        {menuImages.length} image{menuImages.length !== 1 ? 's' : ''}
-                      </Badge>
-                    </div>
+              {/* Add/Edit Menu Item Form */}
+              <MenuItemForm
+                onSubmit={editingItem ? handleEditMenuItem : handleAddMenuItem}
+                initialData={editingItem || undefined}
+                isEditing={!!editingItem}
+              />
 
-                    {/* Drag & Drop Upload Area */}
-                    <div
-                      className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-all duration-300 cursor-pointer ${dragActive
-                        ? 'border-red-500 bg-red-500/5'
-                        : 'border-gray-600 hover:border-gray-500 bg-[#0a0a0a]'
-                        }`}
-                      onDragEnter={handleDrag}
-                      onDragLeave={handleDrag}
-                      onDragOver={handleDrag}
-                      onDrop={handleDrop}
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        onChange={handleFileInputChange}
-                        className="hidden"
-                      />
+              {editingItem && (
+                <div className="flex justify-end">
+                  <Button
+                    variant="outline"
+                    onClick={() => setEditingItem(null)}
+                    className="border-gray-700 text-gray-300 hover:bg-gray-800"
+                  >
+                    Cancel Editing
+                  </Button>
+                </div>
+              )}
 
-                      <div className="space-y-4">
-                        <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center transition-colors duration-300 ${dragActive ? 'bg-red-500/20' : 'bg-gray-700'
-                          }`}>
-                          <Upload className={`w-8 h-8 transition-colors duration-300 ${dragActive ? 'text-red-400' : 'text-gray-400'
-                            }`} />
-                        </div>
-
-                        <div>
-                          <p className="text-white font-medium mb-2">
-                            {dragActive ? 'Drop images here' : 'Drag & drop images here'}
-                          </p>
-                          <p className="text-gray-400 text-sm mb-4">
-                            or click to browse files
-                          </p>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className="border-red-600/50 text-red-400 hover:bg-red-600/10"
-                            disabled={imagesLoading || uploadProgress > 0}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              fileInputRef.current?.click();
-                            }}
-                          >
-                            {uploadProgress > 0 ? (
-                              <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Uploading... {uploadProgress}%
-                              </>
-                            ) : (
-                              <>
-                                <Plus className="w-4 h-4 mr-2" />
-                                Select Images
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Upload Guidelines */}
-                    <div className="flex items-start gap-2 p-3 bg-blue-600/10 rounded-lg border border-blue-600/20">
-                      <Upload className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                      <div className="text-sm">
-                        <p className="text-blue-400 font-medium">Upload Guidelines</p>
-                        <ul className="text-gray-400 mt-1 space-y-1">
-                          <li>• Maximum file size: 5MB per image</li>
-                          <li>• Supported formats: JPG, PNG, WebP</li>
-                          <li>• Multiple images can be uploaded at once</li>
-                          <li>• Recommended size: 800x1200px or similar ratio</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Menu Images Grid */}
-                  {menuImages.length > 0 && (
-                    <div className="space-y-4">
-                      <Label className="text-gray-300 font-medium">Current Menu Images</Label>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {menuImages.map((image) => (
-                          <motion.div
-                            key={image.id}
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-[#0a0a0a] rounded-lg border border-gray-700 overflow-hidden group hover:border-gray-600 transition-all duration-300"
-                          >
-                            {/* Image Preview */}
-                            <div className="relative aspect-[4/3] overflow-hidden">
-                              <img
-                                src={image.url}
-                                alt={image.name}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                              />
-
-                              {/* Overlay Actions */}
-                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
-                                <Button
-                                  size="sm"
-                                  variant="secondary"
-                                  className="bg-white/20 hover:bg-white/30 text-white border-0"
-                                  onClick={() => window.open(image.url, '_blank')}
-                                >
-                                  <Eye className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  className="bg-red-600/80 hover:bg-red-600 text-white border-0"
-                                  onClick={() => setDeleteConfirm(image.id)}
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            </div>
-
-                            {/* Image Info */}
-                            <div className="p-4 space-y-2">
-                              <h4 className="text-white font-medium truncate" title={image.name}>
-                                {image.name}
-                              </h4>
-                              <div className="flex items-center justify-between text-sm text-gray-400">
-                                <div className="flex items-center gap-1">
-                                  <Calendar className="w-3 h-3" />
-                                  <span>{formatDate(image.uploadDate)}</span>
-                                </div>
-                                <span>{formatFileSize(image.size)}</span>
-                              </div>
-                            </div>
-                          </motion.div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Empty State */}
-                  {menuImages.length === 0 && !imagesLoading && (
-                    <div className="text-center py-12">
-                      <div className="w-16 h-16 mx-auto bg-gray-700 rounded-full flex items-center justify-center mb-4">
-                        <ImageIcon className="w-8 h-8 text-gray-400" />
-                      </div>
-                      <p className="text-gray-400 mb-2">No menu images uploaded yet</p>
-                      <p className="text-gray-500 text-sm">Upload your first menu image to get started</p>
-                    </div>
-                  )}
-
-                  {/* Loading State */}
-                  {imagesLoading && (
-                    <div className="text-center py-12">
-                      <Loader2 className="w-8 h-8 mx-auto text-gray-400 animate-spin mb-4" />
-                      <p className="text-gray-400">Loading menu images...</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              {/* Menu Items List */}
+              <MenuItemsList
+                items={menuItems}
+                onEdit={(item) => {
+                  setEditingItem(item);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                onDelete={handleDeleteMenuItem}
+                onToggleAvailability={handleToggleAvailability}
+              />
             </motion.div>
           )}
 

@@ -42,7 +42,7 @@ const PRODUCTS: Product[] = [
       Medium: 510,
       Large: 660
     },
-    image: '/images/pizza2.jpg',
+    image: 'https://i.pinimg.com/736x/2e/23/6f/2e236f086bbd1c433b0c49ffba6312c9.jpg',
     isVeg: true,
     category: 'Pizza'
   },
@@ -179,8 +179,8 @@ export function ProductGrid() {
                   <button
                     onClick={() => handleSizeChange(product.id, 'Medium')}
                     className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-all duration-300 ${selectedSize === 'Medium'
-                        ? 'bg-primary text-white shadow-lg shadow-primary/50'
-                        : 'bg-white/10 text-gray-400 hover:bg-white/20'
+                      ? 'bg-primary text-white shadow-lg shadow-primary/50'
+                      : 'bg-white/10 text-gray-400 hover:bg-white/20'
                       }`}
                   >
                     Medium
@@ -188,8 +188,8 @@ export function ProductGrid() {
                   <button
                     onClick={() => handleSizeChange(product.id, 'Large')}
                     className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-all duration-300 ${selectedSize === 'Large'
-                        ? 'bg-primary text-white shadow-lg shadow-primary/50'
-                        : 'bg-white/10 text-gray-400 hover:bg-white/20'
+                      ? 'bg-primary text-white shadow-lg shadow-primary/50'
+                      : 'bg-white/10 text-gray-400 hover:bg-white/20'
                       }`}
                   >
                     Large

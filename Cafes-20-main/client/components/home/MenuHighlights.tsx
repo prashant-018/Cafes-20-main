@@ -27,7 +27,7 @@ const menuHighlights: MenuHighlight[] = [
     name: "Veg Supreme",
     description: "Loaded with fresh vegetables, olives, and premium cheese blend",
     price: 449,
-    image: "https://images.pexels.com/photos/845811/pexels-photo-845811.jpeg",
+    image: "https://i.pinimg.com/736x/2e/23/6f/2e236f086bbd1c433b0c49ffba6312c9.jpg",
     isVeg: true
   },
   {
@@ -35,7 +35,7 @@ const menuHighlights: MenuHighlight[] = [
     name: "Farm Fresh",
     description: "Garden-fresh vegetables with herbs and mozzarella cheese",
     price: 459,
-    image: "https://images.pexels.com/photos/905847/pexels-photo-905847.jpeg",
+    image: "https://i.pinimg.com/736x/b0/96/23/b09623357dd96f64242e391b00fae7fe.jpg",
     isVeg: true
   },
   {
@@ -51,7 +51,7 @@ const menuHighlights: MenuHighlight[] = [
     name: "Paneer Makhani",
     description: "Creamy paneer makhani with bell peppers and Indian spices",
     price: 499,
-    image: "https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg",
+    image: "https://i.pinimg.com/736x/da/f3/98/daf3988311896ed002a1d75f3702870c.jpg",
     isVeg: true
   },
   {
@@ -59,7 +59,7 @@ const menuHighlights: MenuHighlight[] = [
     name: "4 Cheese",
     description: "Four premium cheeses melted to perfection on crispy crust",
     price: 599,
-    image: "https://images.pexels.com/photos/1279330/pexels-photo-1279330.jpeg",
+    image: "https://i.pinimg.com/736x/4e/f3/c0/4ef3c0d642b3608e621d89a25531cf6e.jpg",
     isVeg: true
   },
   {
@@ -67,7 +67,7 @@ const menuHighlights: MenuHighlight[] = [
     name: "Paneer 65",
     description: "Spicy paneer 65 with onions, peppers, and tandoori sauce",
     price: 549,
-    image: "https://images.pexels.com/photos/2147491/pexels-photo-2147491.jpeg",
+    image: "https://i.pinimg.com/736x/3c/b7/c1/3cb7c1650427e3afde160e971c2e25d7.jpg",
     isVeg: true
   }
 ];

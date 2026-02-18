@@ -26,28 +26,28 @@ export default function Index() {
         style={{ scaleX }}
       />
 
-      {/* Sections with reveal animations - Each section is separate for proper scrolling */}
-      <section id="home">
+      {/* Sections with full viewport height and proper scroll alignment */}
+      <section id="home" className="min-h-screen scroll-mt-0">
         <Hero />
       </section>
 
-      <section id="story" className="relative z-10 bg-background">
-        <Story />
-      </section>
-
-      <section id="gallery" className="relative z-10 bg-background">
-        <Gallery />
-      </section>
-
-      <section id="menu" className="relative z-10 bg-background">
+      <section id="menu" className="min-h-screen scroll-mt-20 relative z-10 bg-background">
         <Pizzas />
       </section>
 
-      <section id="offers" className="relative z-10 bg-background">
+      <section id="offers" className="min-h-screen scroll-mt-20 relative z-10 bg-background">
         <Offers />
       </section>
 
-      <section id="contact" className="relative z-10 bg-background">
+      <section id="gallery" className="min-h-screen scroll-mt-20 relative z-10 bg-background">
+        <Gallery />
+      </section>
+
+      <section id="our-story" className="min-h-screen scroll-mt-20 relative z-10 bg-background">
+        <Story />
+      </section>
+
+      <section id="contact" className="min-h-screen scroll-mt-20 relative z-10 bg-background">
         <Contact />
       </section>
 

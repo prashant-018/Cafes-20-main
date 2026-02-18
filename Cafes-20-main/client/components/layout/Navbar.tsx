@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, User, MessageCircle, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { ProfileMenu } from "./ProfileMenu";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -97,43 +97,29 @@ export function Navbar() {
     setIsLoggedIn(false);
   };
 
-  // Manual scroll function with perfect positioning
-  const scrollToSection = (sectionId: string): void => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      const elementTop = element.getBoundingClientRect().top + window.pageYOffset;
-      const scrollPosition = elementTop - NAVBAR_HEIGHT;
-
-      window.scrollTo({
-        top: scrollPosition,
-        behavior: "smooth"
-      });
-    }
-  };
-
-  // Handle navigation to sections - works from any page
-  const navigateToSection = (sectionId: string): void => {
+  // Smooth scroll to section
+  const scrollToSection = (sectionId: string) => {
     setIsMobileMenuOpen(false);
 
-    // If we're on the home page, scroll directly
-    if (location.pathname === "/") {
-      scrollToSection(sectionId);
-    } else {
-      // If we're on another page, navigate to home first
-      navigate("/");
-      // Wait for navigation to complete, then scroll
-      setTimeout(() => {
-        scrollToSection(sectionId);
-      }, 100);
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const navbarHeight = 88; // Approximate navbar height
+      const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+      const offsetPosition = elementPosition - navbarHeight;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
     }
   };
 
   const navLinks = [
     { name: "Home", sectionId: "home" },
-    { name: "Our Story", sectionId: "story" },
-    { name: "Gallery", sectionId: "gallery" },
     { name: "Menu", sectionId: "menu" },
     { name: "Offers", sectionId: "offers" },
+    { name: "Gallery", sectionId: "gallery" },
+    { name: "Our Story", sectionId: "our-story" },
     { name: "Contact", sectionId: "contact" },
   ];
 
@@ -145,9 +131,13 @@ export function Navbar() {
       )}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <button
-          onClick={() => navigateToSection("home")}
-          className="flex items-center gap-3"
+        <a
+          href="#home"
+          onClick={(e) => {
+            e.preventDefault();
+            scrollToSection("home");
+          }}
+          className="flex items-center gap-3 cursor-pointer"
         >
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
@@ -163,18 +153,22 @@ export function Navbar() {
           <span className="font-serif text-2xl font-bold tracking-tight text-white">
             The Himalayan <span className="text-primary">Pizza</span>
           </span>
-        </button>
+        </a>
 
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => (
-            <button
+            <a
               key={link.name}
-              onClick={() => navigateToSection(link.sectionId)}
-              className="text-sm font-medium text-white/70 hover:text-primary transition-colors"
+              href={`#${link.sectionId}`}
+              onClick={(e) => {
+                e.preventDefault();
+                scrollToSection(link.sectionId);
+              }}
+              className="text-sm font-medium text-white/70 hover:text-primary transition-colors cursor-pointer"
             >
               {link.name}
-            </button>
+            </a>
           ))}
         </div>
 
@@ -222,13 +216,17 @@ export function Navbar() {
             className="absolute top-full left-0 right-0 bg-background border-b border-white/10 p-6 md:hidden flex flex-col gap-4"
           >
             {navLinks.map((link) => (
-              <button
+              <a
                 key={link.name}
-                onClick={() => navigateToSection(link.sectionId)}
-                className="text-lg font-medium text-white/70 hover:text-primary transition-colors"
+                href={`#${link.sectionId}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  scrollToSection(link.sectionId);
+                }}
+                className="text-lg font-medium text-white/70 hover:text-primary transition-colors cursor-pointer"
               >
                 {link.name}
-              </button>
+              </a>
             ))}
             <div className="flex flex-col gap-2 pt-4">
               {/* Mobile Auth Section */}

@@ -164,11 +164,24 @@ export function Footer() {
 
       {/* Bottom Bar */}
       <div className="max-w-7xl mx-auto px-6 mt-10 pt-6 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-        <p>© 2024 The Himalayan Pizza. All rights reserved.</p>
+        <p>© 2026 The Himalayan Pizza. All rights reserved.</p>
         <div className="flex gap-8">
           <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
           <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
         </div>
+      </div>
+
+      {/* Developer Credit */}
+      <div className="max-w-7xl mx-auto px-6 mt-8 pt-5 border-t border-white/5">
+        <p className="text-center text-sm font-medium text-muted-foreground">
+          Developed by Prashant Shrivastava{" "}
+          <a
+            href="tel:7489202191"
+            className="text-primary/80 hover:text-primary transition-colors inline-flex items-center gap-1"
+          >
+            📞 7489202191
+          </a>
+        </p>
       </div>
     </footer>
   );
