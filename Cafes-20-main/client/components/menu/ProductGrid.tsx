@@ -199,7 +199,7 @@ export function ProductGrid() {
 
               {/* Price */}
               <div className="mb-4">
-                <span className="text-3xl font-bold text-yellow-400">
+                <span className="text-3xl font-bold text-yellow-400 tabular-nums whitespace-nowrap leading-none">
                   ₹{currentPrice}
                 </span>
                 <span className="text-gray-500 text-sm ml-2">({selectedSize})</span>

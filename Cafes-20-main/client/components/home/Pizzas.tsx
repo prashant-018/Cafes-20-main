@@ -151,7 +151,9 @@ export function Pizzas() {
                 <h3 className="text-2xl font-bold text-white group-hover:text-primary transition-colors">
                   {pizza.name}
                 </h3>
-                <span className="text-yellow-400 font-bold text-xl">{pizza.price}</span>
+                <span className="text-yellow-400 font-bold text-xl tabular-nums whitespace-nowrap leading-none shrink-0">
+                  {pizza.price}
+                </span>
               </div>
               <p className="text-muted-foreground mb-8 line-clamp-2">
                 {pizza.description}

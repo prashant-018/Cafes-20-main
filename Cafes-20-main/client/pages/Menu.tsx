@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
 import { getMenuItemImage, menuData, MenuItem } from "@/data/menuData";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Interface for admin-added items
 interface AdminMenuItem {
@@ -35,6 +36,8 @@ interface AdminMenuItem {
 export default function Menu() {
   const { settings } = useSettings();
   const whatsappNumberDigits = (settings?.whatsappNumber || "+918305385083").replace(/\D/g, "");
+  const reduceMotion = useReducedMotion();
+  const isMobile = useIsMobile();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -155,53 +158,52 @@ export default function Menu() {
     };
   };
 
-  // Merge static menu data with admin-added items
-  const mergedMenuData = [...menuData];
+  const mergedMenuData = useMemo(() => {
+    // Clone to avoid mutating imported `menuData` and to prevent repeated heavy merges per render.
+    const merged = menuData.map(cat => ({ ...cat, items: [...cat.items] }));
 
-  // Group admin items by category and add to merged data
-  adminMenuItems.forEach(adminItem => {
-    // Find matching category (case-insensitive)
-    const existingCategory = mergedMenuData.find(cat =>
-      cat.name.toLowerCase() === adminItem.category.toLowerCase()
-    );
-    const menuItem = convertAdminItemToMenuItem(adminItem);
+    adminMenuItems.forEach(adminItem => {
+      const existingCategory = merged.find(
+        cat => cat.name.toLowerCase() === adminItem.category.toLowerCase()
+      );
+      const menuItem = convertAdminItemToMenuItem(adminItem);
 
-    if (existingCategory) {
-      // Add to existing category (check for duplicates)
-      const isDuplicate = existingCategory.items.some(item => item.id === menuItem.id);
-      if (!isDuplicate) {
-        existingCategory.items.push(menuItem);
-        console.log(`✅ Added "${menuItem.name}" to existing category "${existingCategory.name}"`);
+      if (existingCategory) {
+        const isDuplicate = existingCategory.items.some(item => item.id === menuItem.id);
+        if (!isDuplicate) existingCategory.items.push(menuItem);
       } else {
-        console.log(`⚠️ Skipped duplicate "${menuItem.name}" in "${existingCategory.name}"`);
+        merged.push({
+          id: adminItem.category.toLowerCase().replace(/\s+/g, "-"),
+          name: adminItem.category,
+          description: `Delicious ${adminItem.category.toLowerCase()}`,
+          icon: "🍽️",
+          items: [menuItem]
+        });
       }
-    } else {
-      // Create new category
-      const newCategory = {
-        id: adminItem.category.toLowerCase().replace(/\s+/g, '-'),
-        name: adminItem.category,
-        description: `Delicious ${adminItem.category.toLowerCase()}`,
-        icon: '🍽️',
-        items: [menuItem]
-      };
-      mergedMenuData.push(newCategory);
-      console.log(`✨ Created new category "${newCategory.name}" with "${menuItem.name}"`);
-    }
-  });
+    });
+
+    return merged;
+  }, [adminMenuItems]);
 
   // Filter items based on search and category
-  const filteredCategories = mergedMenuData.map(category => ({
-    ...category,
-    items: category.items.filter(item => {
-      const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = selectedCategory === "all" || category.id === selectedCategory;
-      const matchesVeg =
-        vegFilter === "all" ||
-        (vegFilter === "veg" ? item.isVeg : !item.isVeg);
-      return matchesSearch && matchesCategory && matchesVeg;
-    })
-  })).filter(category => category.items.length > 0);
+  const filteredCategories = useMemo(() => {
+    const q = searchTerm.toLowerCase().trim();
+    return mergedMenuData
+      .map(category => ({
+        ...category,
+        items: category.items.filter(item => {
+          const matchesSearch =
+            !q ||
+            item.name.toLowerCase().includes(q) ||
+            item.description.toLowerCase().includes(q);
+          const matchesCategory = selectedCategory === "all" || category.id === selectedCategory;
+          const matchesVeg =
+            vegFilter === "all" || (vegFilter === "veg" ? item.isVeg : !item.isVeg);
+          return matchesSearch && matchesCategory && matchesVeg;
+        })
+      }))
+      .filter(category => category.items.length > 0);
+  }, [mergedMenuData, searchTerm, selectedCategory, vegFilter]);
 
   // WhatsApp order function
   const orderOnWhatsApp = (item: MenuItem) => {
@@ -395,10 +397,10 @@ export default function Menu() {
                 {category.items.map((item, itemIndex) => (
                   <motion.div
                     key={item.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: itemIndex * 0.05 }}
-                    whileHover={{ scale: 1.02 }}
+                    initial={reduceMotion ? false : { opacity: 0, x: -20 }}
+                    animate={reduceMotion ? undefined : { opacity: 1, x: 0 }}
+                    transition={reduceMotion ? undefined : { delay: itemIndex * 0.05 }}
+                    whileHover={reduceMotion || isMobile ? undefined : { scale: 1.02 }}
                     className="bg-card/80 backdrop-blur rounded-2xl overflow-hidden border border-white/10 hover:border-primary/30 hover:shadow-[0_18px_60px_-28px_rgba(0,0,0,0.9)] transition-all duration-300 group cursor-pointer"
                     onClick={() => setSelectedItem(item)}
                   >

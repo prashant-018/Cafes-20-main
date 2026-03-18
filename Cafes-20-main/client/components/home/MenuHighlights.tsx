@@ -197,7 +197,7 @@ const MenuHighlights = () => {
 
                 {/* Price */}
                 <div className="mb-4">
-                  <span className="text-2xl font-bold text-yellow-400">
+                  <span className="text-2xl font-bold text-yellow-400 tabular-nums whitespace-nowrap leading-none">
                     ₹{item.price}
                   </span>
                 </div>
