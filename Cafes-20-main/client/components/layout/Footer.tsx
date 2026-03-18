@@ -17,7 +17,7 @@ const footerLinks = [
   { label: "Contact", id: "contact" }
 ] as const;
 
-export function Footer() {
+export function Footer({ showDeveloperCredit = false }: { showDeveloperCredit?: boolean }) {
   return (
     <footer className="relative bg-background pt-12 pb-10 overflow-hidden">
       {/* Animated Gradient Background */}
@@ -171,18 +171,20 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Developer Credit */}
-      <div className="max-w-7xl mx-auto px-6 mt-8 pt-5 border-t border-white/5">
-        <p className="text-center text-sm font-medium text-muted-foreground">
-          Developed by Prashant Shrivastava{" "}
-          <a
-            href="tel:7489202191"
-            className="text-primary/80 hover:text-primary transition-colors inline-flex items-center gap-1"
-          >
-            📞 7489202191
-          </a>
-        </p>
-      </div>
+      {/* Developer Credit (optional) */}
+      {showDeveloperCredit && (
+        <div className="max-w-7xl mx-auto px-6 mt-8 pt-5 border-t border-white/5">
+          <p className="text-center text-sm font-medium text-muted-foreground">
+            Developed by Prashant Shrivastava{" "}
+            <a
+              href="tel:7489202191"
+              className="text-primary/80 hover:text-primary transition-colors inline-flex items-center gap-1"
+            >
+              📞 7489202191
+            </a>
+          </p>
+        </div>
+      )}
     </footer>
   );
 }
