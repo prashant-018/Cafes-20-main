@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +41,7 @@ export default function Menu() {
   const [vegFilter, setVegFilter] = useState<"all" | "veg" | "nonveg">("all");
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [adminMenuItems, setAdminMenuItems] = useState<AdminMenuItem[]>([]);
+  const lastAdminRawRef = useRef<string | null>(null);
 
   const VegNonVegToggleIcon = ({
     variant,
@@ -95,6 +96,8 @@ export default function Menu() {
   useEffect(() => {
     const loadMenuItems = () => {
       const saved = localStorage.getItem('adminMenuItems');
+      if (saved && lastAdminRawRef.current === saved) return;
+      lastAdminRawRef.current = saved;
       if (saved) {
         try {
           const items = JSON.parse(saved);
@@ -122,10 +125,11 @@ export default function Menu() {
 
     window.addEventListener('storage', handleStorageChange);
 
-    // Also check for changes every 2 seconds (for same-tab updates)
+    // Same-tab updates: light polling, only when tab is visible.
     const interval = setInterval(() => {
+      if (document.visibilityState !== 'visible') return;
       loadMenuItems();
-    }, 2000);
+    }, 10000);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
@@ -222,14 +226,16 @@ export default function Menu() {
       ].filter(r => typeof r.value === "number");
 
       return (
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
           {rows.map(r => (
             <div
               key={r.label}
-              className="flex items-baseline gap-1.5 rounded-full bg-white/5 ring-1 ring-white/10 px-2.5 py-1"
+              className="flex items-baseline gap-1.5 rounded-full bg-white/5 ring-1 ring-white/10 px-3 py-1.5 whitespace-nowrap w-fit"
             >
               <span className="text-[11px] text-muted-foreground">{r.label}</span>
-              <span className="text-[15px] font-bold tabular-nums text-yellow-400">{money(r.value)}</span>
+              <span className="text-[15px] font-bold tabular-nums text-yellow-400 whitespace-nowrap">
+                {money(r.value)}
+              </span>
             </div>
           ))}
         </div>
@@ -402,6 +408,8 @@ export default function Menu() {
                         <img
                           src={getMenuItemImage(item)}
                           alt={item.name}
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                         />
                         <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/55 to-transparent" />
@@ -422,7 +430,7 @@ export default function Menu() {
                               <VegNonVegDot isVeg={item.isVeg} />
                               <span className="truncate">{item.name}</span>
                               {item.isVeg && (
-                                <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-0.5 text-[11px] font-medium text-green-400 ring-1 ring-green-500/20">
+                                <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-0.5 text-[11px] font-medium text-green-400 ring-1 ring-green-500/20 whitespace-nowrap leading-none shrink-0">
                                   <Leaf className="w-3.5 h-3.5" />
                                   Veg
                                 </span>
@@ -434,14 +442,14 @@ export default function Menu() {
                           </p>
                         </div>
 
-                        <div className="flex items-end justify-between gap-3">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                           {/* Price */}
                           <div className="min-w-0">{formatPrice(item.price)}</div>
 
                           {/* Order Button */}
                           <Button
                             size="sm"
-                            className="bg-green-600 hover:bg-green-700 text-white border-0 rounded-full px-4 py-2 text-xs sm:text-sm shadow-sm hover:shadow transition-shadow"
+                            className="bg-green-600 hover:bg-green-700 text-white border-0 rounded-full px-4 h-9 text-xs sm:text-sm shadow-sm hover:shadow transition-shadow w-full sm:w-auto justify-center"
                             onClick={(e) => {
                               e.stopPropagation();
                               orderOnWhatsApp(item);
@@ -493,6 +501,8 @@ export default function Menu() {
                   <img
                     src={getMenuItemImage(selectedItem)}
                     alt={selectedItem.name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute top-4 left-4 flex gap-2">
