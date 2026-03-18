@@ -12,7 +12,7 @@ import {
   X
 } from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
-import { menuData, MenuItem } from "@/data/menuData";
+import { getMenuItemImage, menuData, MenuItem } from "@/data/menuData";
 
 // Interface for admin-added items
 interface AdminMenuItem {
@@ -38,8 +38,58 @@ export default function Menu() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [vegFilter, setVegFilter] = useState<"all" | "veg" | "nonveg">("all");
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [adminMenuItems, setAdminMenuItems] = useState<AdminMenuItem[]>([]);
+
+  const VegNonVegToggleIcon = ({
+    variant,
+    active
+  }: {
+    variant: "veg" | "nonveg";
+    active: boolean;
+  }) => {
+    const color = variant === "veg" ? "#22c55e" : "#dc2626";
+    const borderColor = active ? "#ffffff" : color;
+    const fillColor = active ? "#ffffff" : color;
+
+    return (
+      <span
+        className="inline-flex items-center justify-center w-[14px] h-[14px]"
+        style={{
+          borderWidth: 1.5,
+          borderStyle: "solid",
+          borderColor,
+          borderRadius: 3
+        }}
+        aria-hidden="true"
+      >
+        <span
+          className="w-[7px] h-[7px] rounded-full"
+          style={{ backgroundColor: fillColor }}
+        />
+      </span>
+    );
+  };
+
+  const VegNonVegDot = ({ isVeg }: { isVeg: boolean }) => (
+    <span
+      className="inline-flex items-center justify-center w-[18px] h-[18px]"
+      style={{
+        borderWidth: 3,
+        borderStyle: "solid",
+        borderColor: isVeg ? "#22c55e" : "#dc2626",
+        borderRadius: 3
+      }}
+      aria-label={isVeg ? "Veg" : "Non-Veg"}
+      title={isVeg ? "Veg" : "Non-Veg"}
+    >
+      <span
+        className="w-[9px] h-[9px] rounded-full"
+        style={{ backgroundColor: isVeg ? "#22c55e" : "#dc2626" }}
+      />
+    </span>
+  );
 
   // Load admin-added menu items from localStorage
   useEffect(() => {
@@ -104,13 +154,6 @@ export default function Menu() {
   // Merge static menu data with admin-added items
   const mergedMenuData = [...menuData];
 
-  // Debug logging
-  console.log('📊 Menu Data Merge:', {
-    staticCategories: menuData.length,
-    adminItems: adminMenuItems.length,
-    adminItemsDetails: adminMenuItems.map(i => ({ name: i.name, category: i.category, id: i.id }))
-  });
-
   // Group admin items by category and add to merged data
   adminMenuItems.forEach(adminItem => {
     // Find matching category (case-insensitive)
@@ -149,7 +192,10 @@ export default function Menu() {
       const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.description.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = selectedCategory === "all" || category.id === selectedCategory;
-      return matchesSearch && matchesCategory;
+      const matchesVeg =
+        vegFilter === "all" ||
+        (vegFilter === "veg" ? item.isVeg : !item.isVeg);
+      return matchesSearch && matchesCategory && matchesVeg;
     })
   })).filter(category => category.items.length > 0);
 
@@ -165,16 +211,37 @@ export default function Menu() {
   };
 
   // Format price display
-  const formatPrice = (price: MenuItem['price']) => {
-    if (price.medium) {
+  const formatPrice = (price: MenuItem["price"]) => {
+    const money = (n?: number) => (typeof n === "number" ? `₹${n}` : "");
+
+    if (price.small || price.medium || price.large) {
+      const rows: Array<{ label: string; value?: number }> = [
+        { label: "Small", value: price.small },
+        { label: "Medium", value: price.medium },
+        { label: "Large", value: price.large }
+      ].filter(r => typeof r.value === "number");
+
       return (
-        <div className="flex flex-col">
-          <span className="text-yellow-400 font-bold text-lg">₹{price.medium}</span>
-          <span className="text-gray-400 text-xs">Medium</span>
+        <div className="flex flex-wrap items-center gap-2">
+          {rows.map(r => (
+            <div
+              key={r.label}
+              className="flex items-baseline gap-1.5 rounded-full bg-white/5 ring-1 ring-white/10 px-2.5 py-1"
+            >
+              <span className="text-[11px] text-muted-foreground">{r.label}</span>
+              <span className="text-[15px] font-bold tabular-nums text-yellow-400">{money(r.value)}</span>
+            </div>
+          ))}
         </div>
       );
     }
-    return <span className="text-yellow-400 font-bold text-xl">₹{price.regular}</span>;
+
+    return (
+      <div className="flex items-baseline gap-2">
+        <span className="text-[11px] text-muted-foreground">Price</span>
+        <span className="text-xl font-bold tabular-nums text-yellow-400">{money(price.regular)}</span>
+      </div>
+    );
   };
 
   return (
@@ -245,6 +312,32 @@ export default function Menu() {
           >
             All Items
           </Button>
+          <Button
+            variant={vegFilter === "veg" ? "default" : "outline"}
+            onClick={() => setVegFilter(prev => (prev === "veg" ? "all" : "veg"))}
+            className={`rounded-full whitespace-nowrap ${vegFilter === "veg"
+              ? "bg-green-600 text-white hover:bg-green-700"
+              : "border-white/10 text-white hover:bg-white/10"
+              }`}
+          >
+            <span className="inline-flex items-center gap-[6px]">
+              <VegNonVegToggleIcon variant="veg" active={vegFilter === "veg"} />
+              <span>VEG</span>
+            </span>
+          </Button>
+          <Button
+            variant={vegFilter === "nonveg" ? "default" : "outline"}
+            onClick={() => setVegFilter(prev => (prev === "nonveg" ? "all" : "nonveg"))}
+            className={`rounded-full whitespace-nowrap ${vegFilter === "nonveg"
+              ? "bg-red-600 text-white hover:bg-red-700"
+              : "border-white/10 text-white hover:bg-white/10"
+              }`}
+          >
+            <span className="inline-flex items-center gap-[6px]">
+              <VegNonVegToggleIcon variant="nonveg" active={vegFilter === "nonveg"} />
+              <span>NON-VEG</span>
+            </span>
+          </Button>
           {mergedMenuData.map((category) => (
             <Button
               key={category.id}
@@ -300,28 +393,22 @@ export default function Menu() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: itemIndex * 0.05 }}
                     whileHover={{ scale: 1.02 }}
-                    className="bg-card rounded-2xl overflow-hidden border border-white/5 hover:border-primary/30 transition-all duration-300 group cursor-pointer"
+                    className="bg-card/80 backdrop-blur rounded-2xl overflow-hidden border border-white/10 hover:border-primary/30 hover:shadow-[0_18px_60px_-28px_rgba(0,0,0,0.9)] transition-all duration-300 group cursor-pointer"
                     onClick={() => setSelectedItem(item)}
                   >
-                    <div className="flex gap-4 p-4">
+                    <div className="flex gap-4 p-4 sm:p-5">
                       {/* Image */}
-                      <div className="relative w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 rounded-xl overflow-hidden">
+                      <div className="relative w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 rounded-xl overflow-hidden ring-1 ring-white/10">
                         <img
-                          src={item.image}
+                          src={getMenuItemImage(item)}
                           alt={item.name}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                         />
-                        {item.isVeg && (
-                          <div className="absolute top-2 right-2">
-                            <Badge className="bg-green-600 border-green-500 text-white px-2 py-0.5 text-xs">
-                              <Leaf className="w-3 h-3" />
-                            </Badge>
-                          </div>
-                        )}
+                        <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/55 to-transparent" />
                         {item.isPopular && (
                           <div className="absolute top-2 left-2">
-                            <Badge className="bg-yellow-600 border-yellow-500 text-white px-2 py-0.5 text-xs">
-                              ⭐
+                            <Badge className="bg-yellow-500/90 border-yellow-300/50 text-black px-2 py-0.5 text-xs font-semibold">
+                              ★ Popular
                             </Badge>
                           </div>
                         )}
@@ -330,30 +417,31 @@ export default function Menu() {
                       {/* Content */}
                       <div className="flex-1 min-w-0 flex flex-col justify-between">
                         <div>
-                          <h3 className="text-base sm:text-lg font-bold text-white mb-1 group-hover:text-primary transition-colors line-clamp-1">
-                            {item.name}
+                          <h3 className="text-base sm:text-lg font-semibold text-white mb-1 leading-snug group-hover:text-primary transition-colors">
+                            <span className="flex items-center gap-2 min-w-0">
+                              <VegNonVegDot isVeg={item.isVeg} />
+                              <span className="truncate">{item.name}</span>
+                              {item.isVeg && (
+                                <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-0.5 text-[11px] font-medium text-green-400 ring-1 ring-green-500/20">
+                                  <Leaf className="w-3.5 h-3.5" />
+                                  Veg
+                                </span>
+                              )}
+                            </span>
                           </h3>
-                          <p className="text-gray-400 text-xs sm:text-sm line-clamp-2 mb-2">
+                          <p className="text-gray-400 text-xs sm:text-sm line-clamp-2 mb-3">
                             {item.description}
                           </p>
                         </div>
 
-                        <div className="flex items-end justify-between gap-2">
+                        <div className="flex items-end justify-between gap-3">
                           {/* Price */}
-                          <div>
-                            {formatPrice(item.price)}
-                            {item.price.large && (
-                              <div className="mt-1">
-                                <span className="text-yellow-400 font-bold text-sm">₹{item.price.large}</span>
-                                <span className="text-gray-400 text-xs ml-1">Large</span>
-                              </div>
-                            )}
-                          </div>
+                          <div className="min-w-0">{formatPrice(item.price)}</div>
 
                           {/* Order Button */}
                           <Button
                             size="sm"
-                            className="bg-green-600 hover:bg-green-700 text-white border-0 rounded-lg px-3 py-2 text-xs sm:text-sm"
+                            className="bg-green-600 hover:bg-green-700 text-white border-0 rounded-full px-4 py-2 text-xs sm:text-sm shadow-sm hover:shadow transition-shadow"
                             onClick={(e) => {
                               e.stopPropagation();
                               orderOnWhatsApp(item);
@@ -403,17 +491,26 @@ export default function Menu() {
                 {/* Item Image */}
                 <div className="relative aspect-square overflow-hidden">
                   <img
-                    src={selectedItem.image}
+                    src={getMenuItemImage(selectedItem)}
                     alt={selectedItem.name}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute top-4 left-4 flex gap-2">
-                    {selectedItem.isVeg && (
-                      <Badge className="bg-green-600 border-green-500 text-white">
-                        <Leaf className="w-4 h-4 mr-1" />
-                        VEG
-                      </Badge>
-                    )}
+                    <Badge
+                      className={`${selectedItem.isVeg
+                          ? "bg-green-600 border-green-500"
+                          : "bg-red-600 border-red-500"
+                        } text-white`}
+                    >
+                      {selectedItem.isVeg ? (
+                        <>
+                          <Leaf className="w-4 h-4 mr-1" />
+                          VEG
+                        </>
+                      ) : (
+                        "NON-VEG"
+                      )}
+                    </Badge>
                     {selectedItem.isPopular && (
                       <Badge className="bg-yellow-600 border-yellow-500 text-white">
                         ⭐ Popular
@@ -425,8 +522,9 @@ export default function Menu() {
                 {/* Item Details */}
                 <div className="p-6 sm:p-8 flex flex-col justify-between">
                   <div>
-                    <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
-                      {selectedItem.name}
+                    <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 flex items-center gap-3">
+                      <VegNonVegDot isVeg={selectedItem.isVeg} />
+                      <span>{selectedItem.name}</span>
                     </h2>
                     <p className="text-gray-400 text-base sm:text-lg mb-6 leading-relaxed">
                       {selectedItem.description}
@@ -434,7 +532,22 @@ export default function Menu() {
 
                     {/* Price */}
                     <div className="mb-6">
-                      {selectedItem.price.medium ? (
+                      {selectedItem.price.small ? (
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                            <span className="text-white">Small</span>
+                            <span className="text-yellow-400 font-bold text-xl">₹{selectedItem.price.small}</span>
+                          </div>
+                          <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                            <span className="text-white">Medium</span>
+                            <span className="text-yellow-400 font-bold text-xl">₹{selectedItem.price.medium}</span>
+                          </div>
+                          <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                            <span className="text-white">Large</span>
+                            <span className="text-yellow-400 font-bold text-xl">₹{selectedItem.price.large}</span>
+                          </div>
+                        </div>
+                      ) : selectedItem.price.medium ? (
                         <div className="space-y-2">
                           <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
                             <span className="text-white">Medium</span>

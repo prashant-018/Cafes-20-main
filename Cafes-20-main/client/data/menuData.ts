@@ -4,6 +4,7 @@ export interface MenuItem {
   name: string;
   description: string;
   price: {
+    small?: number;
     medium?: number;
     large?: number;
     regular?: number;
@@ -101,6 +102,85 @@ export const menuData: MenuCategory[] = [
         image: "https://images.pexels.com/photos/825661/pexels-photo-825661.jpeg",
         isVeg: true,
         category: "Classic Pizzas"
+      },
+      {
+        id: "chicken-crunch",
+        name: "Chicken Crunch",
+        description: "Crunchy chicken topping with mozzarella and special seasoning",
+        price: { small: 200, medium: 320, large: 420 },
+        image: "https://images.pexels.com/photos/2147491/pexels-photo-2147491.jpeg",
+        isVeg: false,
+        category: "Classic Pizzas"
+      },
+      {
+        id: "chicken-golden",
+        name: "Chicken Golden",
+        description: "Golden chicken topping with cheese and herbs",
+        price: { small: 200, medium: 320, large: 420 },
+        image: "https://images.pexels.com/photos/1653877/pexels-photo-1653877.jpeg",
+        isVeg: false,
+        category: "Classic Pizzas"
+      }
+    ]
+  },
+  {
+    id: "favourite-pizzas",
+    name: "Favourite Pizzas",
+    description: "Fan favorites with bold flavors",
+    icon: "🍕",
+    items: [
+      {
+        id: "chicken-mexican",
+        name: "Chicken Mexican",
+        description: "Mexican-style chicken toppings with spicy sauce and cheese",
+        price: { small: 240, medium: 360, large: 480 },
+        image: "https://images.pexels.com/photos/825661/pexels-photo-825661.jpeg",
+        isVeg: false,
+        category: "Favourite Pizzas"
+      },
+      {
+        id: "chilly-chicken-hot-fire",
+        name: "Chilly Chicken Hot Fire",
+        description: "Hot and fiery chilly chicken with extra spice and cheese",
+        price: { small: 240, medium: 360, large: 480 },
+        image: "https://images.pexels.com/photos/2762938/pexels-photo-2762938.jpeg",
+        isVeg: false,
+        category: "Favourite Pizzas"
+      }
+    ]
+  },
+  {
+    id: "feast-pizzas",
+    name: "Feast Pizzas",
+    description: "Hearty pizzas for big cravings",
+    icon: "🍕",
+    items: [
+      {
+        id: "pepperoni-pizza",
+        name: "Pepperoni Pizza",
+        description: "Classic pepperoni with mozzarella and signature sauce",
+        price: { small: 260, medium: 440, large: 560 },
+        image: "https://images.pexels.com/photos/2147491/pexels-photo-2147491.jpeg",
+        isVeg: false,
+        category: "Feast Pizzas"
+      },
+      {
+        id: "bbq-chicken-pizza",
+        name: "BBQ Chicken",
+        description: "BBQ chicken with smoky sauce and cheese",
+        price: { small: 260, medium: 440, large: 560 },
+        image: "https://images.pexels.com/photos/1653877/pexels-photo-1653877.jpeg",
+        isVeg: false,
+        category: "Feast Pizzas"
+      },
+      {
+        id: "chilly-chicken-pizza",
+        name: "Chilly Chicken",
+        description: "Chilly chicken with onions, peppers, and cheese",
+        price: { small: 260, medium: 440, large: 560 },
+        image: "https://images.pexels.com/photos/905847/pexels-photo-905847.jpeg",
+        isVeg: false,
+        category: "Feast Pizzas"
       }
     ]
   },
@@ -136,6 +216,33 @@ export const menuData: MenuCategory[] = [
         price: { medium: 449, large: 599 },
         image: "https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg",
         isVeg: true,
+        category: "Delight Pizzas"
+      },
+      {
+        id: "kabab-n-chicken",
+        name: "Kabab n Chicken",
+        description: "Juicy chicken with kabab flavor, cheese, and herbs",
+        price: { small: 280, medium: 540, large: 640 },
+        image: "https://images.pexels.com/photos/2147491/pexels-photo-2147491.jpeg",
+        isVeg: false,
+        category: "Delight Pizzas"
+      },
+      {
+        id: "zesty-chicken",
+        name: "Zesty Chicken",
+        description: "Zesty chicken topping with tangy sauce and cheese",
+        price: { small: 280, medium: 540, large: 640 },
+        image: "https://images.pexels.com/photos/1653877/pexels-photo-1653877.jpeg",
+        isVeg: false,
+        category: "Delight Pizzas"
+      },
+      {
+        id: "spicy-chicken-delight",
+        name: "Spicy Chicken",
+        description: "Spicy chicken with extra heat, herbs, and cheese",
+        price: { small: 280, medium: 540, large: 640 },
+        image: "https://images.pexels.com/photos/2762938/pexels-photo-2762938.jpeg",
+        isVeg: false,
         category: "Delight Pizzas"
       }
     ]
@@ -182,6 +289,33 @@ export const menuData: MenuCategory[] = [
         price: { medium: 549, large: 699 },
         image: "https://i.pinimg.com/736x/4e/f3/c0/4ef3c0d642b3608e621d89a25531cf6e.jpg",
         isVeg: true,
+        category: "Premium Pizzas"
+      },
+      {
+        id: "the-monster-pizza",
+        name: "The Monster Pizza",
+        description: "A monster-sized chicken loaded pizza with premium toppings",
+        price: { small: 310, medium: 580, large: 680 },
+        image: "https://images.pexels.com/photos/2147491/pexels-photo-2147491.jpeg",
+        isVeg: false,
+        category: "Premium Pizzas"
+      },
+      {
+        id: "chicken-supreme",
+        name: "Chicken Supreme",
+        description: "Supreme chicken toppings with olives, peppers, and cheese",
+        price: { small: 310, medium: 580, large: 680 },
+        image: "https://images.pexels.com/photos/1653877/pexels-photo-1653877.jpeg",
+        isVeg: false,
+        category: "Premium Pizzas"
+      },
+      {
+        id: "chicken-tandoori",
+        name: "Chicken Tandoori",
+        description: "Tandoori chicken with Indian spices and cheese",
+        price: { small: 310, medium: 580, large: 680 },
+        image: "https://images.pexels.com/photos/905847/pexels-photo-905847.jpeg",
+        isVeg: false,
         category: "Premium Pizzas"
       }
     ]
@@ -254,6 +388,42 @@ export const menuData: MenuCategory[] = [
         image: "https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg",
         isVeg: true,
         category: "Burgers"
+      },
+      {
+        id: "egg-burger",
+        name: "Egg Burger",
+        description: "Egg patty with fresh veggies and special sauce",
+        price: { regular: 70 },
+        image: "https://images.pexels.com/photos/1639565/pexels-photo-1639565.jpeg",
+        isVeg: false,
+        category: "Burgers"
+      },
+      {
+        id: "classic-chicken-burger",
+        name: "Classic Chicken Burger",
+        description: "Classic chicken patty burger with fresh vegetables",
+        price: { regular: 95 },
+        image: "https://images.pexels.com/photos/580612/pexels-photo-580612.jpeg",
+        isVeg: false,
+        category: "Burgers"
+      },
+      {
+        id: "chicken-cheese-burger",
+        name: "Chicken Cheese Burger",
+        description: "Chicken patty with melted cheese and signature sauce",
+        price: { regular: 110 },
+        image: "https://images.pexels.com/photos/1639565/pexels-photo-1639565.jpeg",
+        isVeg: false,
+        category: "Burgers"
+      },
+      {
+        id: "chicken-spicy-burger",
+        name: "Chicken Spicy Burger",
+        description: "Spicy chicken patty with jalapeños and hot sauce",
+        price: { regular: 140 },
+        image: "https://images.pexels.com/photos/580612/pexels-photo-580612.jpeg",
+        isVeg: false,
+        category: "Burgers"
       }
     ]
   },
@@ -288,6 +458,33 @@ export const menuData: MenuCategory[] = [
         price: { regular: 129 },
         image: "https://images.pexels.com/photos/2474661/pexels-photo-2474661.jpeg",
         isVeg: true,
+        category: "Wraps"
+      },
+      {
+        id: "chicken-wrap",
+        name: "Chicken Wrap",
+        description: "Chicken filling with crunchy veggies in a soft wrap",
+        price: { regular: 140 },
+        image: "https://images.pexels.com/photos/2474661/pexels-photo-2474661.jpeg",
+        isVeg: false,
+        category: "Wraps"
+      },
+      {
+        id: "spicy-chicken-wrap",
+        name: "Spicy Chicken Wrap",
+        description: "Spicy chicken with hot sauce and fresh veggies",
+        price: { regular: 160 },
+        image: "https://images.pexels.com/photos/2474661/pexels-photo-2474661.jpeg",
+        isVeg: false,
+        category: "Wraps"
+      },
+      {
+        id: "chicken-loaded-wrap",
+        name: "Chicken Loaded Wrap",
+        description: "Loaded chicken wrap with extra cheese and sauce",
+        price: { regular: 180 },
+        image: "https://images.pexels.com/photos/2474661/pexels-photo-2474661.jpeg",
+        isVeg: false,
         category: "Wraps"
       }
     ]
@@ -341,6 +538,33 @@ export const menuData: MenuCategory[] = [
         price: { regular: 169 },
         image: "https://images.pexels.com/photos/1279330/pexels-photo-1279330.jpeg",
         isVeg: true,
+        category: "Pasta"
+      },
+      {
+        id: "chicken-pasta",
+        name: "Chicken Pasta",
+        description: "Creamy pasta loaded with tender chicken",
+        price: { regular: 200 },
+        image: "https://images.pexels.com/photos/1279330/pexels-photo-1279330.jpeg",
+        isVeg: false,
+        category: "Pasta"
+      },
+      {
+        id: "chicken-chilli-pasta",
+        name: "Chicken Chilli Pasta",
+        description: "Spicy chilli chicken pasta with signature seasoning",
+        price: { regular: 200 },
+        image: "https://images.pexels.com/photos/1279330/pexels-photo-1279330.jpeg",
+        isVeg: false,
+        category: "Pasta"
+      },
+      {
+        id: "red-chilli-pasta",
+        name: "Red Chilli Pasta",
+        description: "Hot red chilli pasta for spice lovers",
+        price: { regular: 240 },
+        image: "https://images.pexels.com/photos/1279330/pexels-photo-1279330.jpeg",
+        isVeg: false,
         category: "Pasta"
       }
     ]
@@ -574,6 +798,29 @@ export const menuData: MenuCategory[] = [
     ]
   }
 ];
+
+const normalizeKey = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/&/g, "and")
+    .replace(/['"]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+
+/**
+ * Returns an image URL for a menu item. If the item already has an `image`, it is used.
+ * Otherwise we generate a stable image URL from product name + category.
+ */
+export const getMenuItemImage = (item: Pick<MenuItem, "name" | "category" | "image">) => {
+  const explicit = (item.image || "").trim();
+  if (explicit) return explicit;
+
+  const seed = normalizeKey(`${item.category}-${item.name}`);
+  // Stable placeholder based on product name (no manual URLs required).
+  return `https://picsum.photos/seed/${encodeURIComponent(seed)}/600/600`;
+};
 
 // Helper function to get all items
 export const getAllMenuItems = (): MenuItem[] => {
