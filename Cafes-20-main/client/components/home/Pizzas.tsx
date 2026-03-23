@@ -12,7 +12,7 @@ const pizzas = [
     name: "Himalayan Special",
     price: "₹499",
     type: "veg",
-    image: "https://images.pexels.com/photos/2762938/pexels-photo-2762938.jpeg",
+    image: "/vegmenuimage/Himalayan Pizza Special.jpg",
     description: "Our signature pizza with exotic Himalayan flavors and premium toppings",
   },
   {
@@ -20,7 +20,7 @@ const pizzas = [
     name: "Veg Supreme",
     price: "₹449",
     type: "veg",
-    image: "https://i.pinimg.com/736x/2e/23/6f/2e236f086bbd1c433b0c49ffba6312c9.jpg",
+    image: "/vegmenuimage/eg Supreme Pizz.jpeg",
     description: "Loaded with fresh vegetables, olives, and premium cheese blend",
   },
   {
@@ -28,7 +28,7 @@ const pizzas = [
     name: "Farm Fresh",
     price: "₹459",
     type: "veg",
-    image: "https://i.pinimg.com/736x/b0/96/23/b09623357dd96f64242e391b00fae7fe.jpg",
+    image: "/vegmenuimage/Veggie Pizza.jpeg",
     description: "Garden-fresh vegetables with herbs and mozzarella cheese",
   },
   {
@@ -36,23 +36,15 @@ const pizzas = [
     name: "BBQ Paneer",
     price: "₹529",
     type: "veg",
-    image: "https://images.pexels.com/photos/10790638/pexels-photo-10790638.jpeg",
+    image: "/nonvegmenu/bbq.jpg",
     description: "Smoky BBQ paneer with onions, peppers, and special sauce",
-  },
-  {
-    id: 5,
-    name: "Paneer Makhani",
-    price: "₹499",
-    type: "veg",
-    image: "https://i.pinimg.com/736x/da/f3/98/daf3988311896ed002a1d75f3702870c.jpg",
-    description: "Creamy paneer makhani with bell peppers and Indian spices",
   },
   {
     id: 6,
     name: "4 Cheese",
     price: "₹599",
     type: "veg",
-    image: "https://i.pinimg.com/736x/4e/f3/c0/4ef3c0d642b3608e621d89a25531cf6e.jpg",
+    image: "/vegmenuimage/cheese-loaded pizza.jpeg",
     description: "Four premium cheeses melted to perfection on crispy crust",
   },
   {
@@ -60,7 +52,7 @@ const pizzas = [
     name: "Paneer 65",
     price: "₹549",
     type: "veg",
-    image: "https://i.pinimg.com/736x/3c/b7/c1/3cb7c1650427e3afde160e971c2e25d7.jpg",
+    image: "/vegmenuimage/Paneer Tikka Pizza.jpeg",
     description: "Spicy paneer 65 with onions, peppers, and tandoori sauce",
   },
 ];

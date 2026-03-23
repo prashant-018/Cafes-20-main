@@ -297,9 +297,9 @@ export default function MenuProducts() {
                     className="bg-card/80 backdrop-blur rounded-2xl overflow-hidden border border-white/10 hover:border-primary/30 hover:shadow-[0_18px_60px_-28px_rgba(0,0,0,0.9)] transition-all duration-300 group cursor-pointer"
                     onClick={() => setSelectedItem(item)}
                   >
-                    <div className="flex gap-4 p-4 sm:p-5 [will-change:transform]">
+                    <div className="flex flex-col sm:flex-row gap-4 p-4 sm:p-5 [will-change:transform]">
                       {/* Image */}
-                      <div className="relative w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 rounded-xl overflow-hidden ring-1 ring-white/10">
+                      <div className="relative w-full h-48 sm:w-32 sm:h-32 flex-shrink-0 rounded-xl overflow-hidden ring-1 ring-white/10">
                         <img
                           src={getMenuItemImage(item)}
                           alt={item.name}

@@ -77,7 +77,7 @@ export function Offers() {
             >
               <div className="relative z-10">
                 <h4 className="text-xl font-bold text-white mb-2">Saturday Special</h4>
-                <p className="text-white/80 mb-4">2 Paneer Makhani Pizzas (Medium) at just ₹499.</p>
+                <p className="text-white/80 mb-4">2 Paneer 65 Pizzas (Medium) at just ₹549.</p>
                 <Badge className="bg-accent text-accent-foreground font-bold">ONLY SATURDAYS</Badge>
               </div>
               <Flame className="absolute -bottom-4 -right-4 w-24 h-24 text-white/10" />
