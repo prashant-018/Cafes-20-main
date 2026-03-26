@@ -147,6 +147,7 @@ export default function Menu() {
       name: adminItem.name,
       description: adminItem.description,
       price: {
+        small: adminItem.pricing.small,
         regular: adminItem.pricing.single,
         medium: adminItem.pricing.medium,
         large: adminItem.pricing.large

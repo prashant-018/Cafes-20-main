@@ -31,14 +31,7 @@ const pizzas = [
     image: "/vegmenuimage/Veggie Pizza.jpeg",
     description: "Garden-fresh vegetables with herbs and mozzarella cheese",
   },
-  {
-    id: 4,
-    name: "BBQ Paneer",
-    price: "₹529",
-    type: "veg",
-    image: "/nonvegmenu/bbq.jpg",
-    description: "Smoky BBQ paneer with onions, peppers, and special sauce",
-  },
+
   {
     id: 6,
     name: "4 Cheese",

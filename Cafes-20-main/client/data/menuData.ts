@@ -178,7 +178,7 @@ export const menuData: MenuCategory[] = [
         name: "Hot N' Spicy",
         description: "Hot and spicy veg delight",
         price: { small: 260, medium: 400, large: 560 },
-        image: "/vegmenuimage/paneer bread.jpg",
+        image: "/vegmenuimage/Hot N' Spicy.jpg",
         isVeg: true,
         category: "Feast Pizzas"
       },
@@ -332,7 +332,7 @@ export const menuData: MenuCategory[] = [
         name: "The Monster Pizza",
         description: "A monster-sized chicken loaded pizza with premium toppings",
         price: { small: 310, medium: 580, large: 680 },
-        image: "/nonvegmenu/Chicken Crunch.jpg",
+        image: "/nonvegmenu/The Monster Pizza.jpg",
         isVeg: false,
         category: "Premium Pizzas"
       },
@@ -367,7 +367,7 @@ export const menuData: MenuCategory[] = [
         name: "Aloo Tikki Burger",
         description: "Crispy potato patty with fresh vegetables",
         price: { regular: 50 },
-        image: "https://images.pexels.com/photos/1639565/pexels-photo-1639565.jpeg",
+        image: "/vegmenuimage/Aloo Tikki Burger.jpg",
         isVeg: true,
         category: "Burgers"
       },
@@ -403,7 +403,7 @@ export const menuData: MenuCategory[] = [
         name: "Cheese Burger",
         description: "Veg patty with melted cheese",
         price: { regular: 80 },
-        image: "https://images.pexels.com/photos/580612/pexels-photo-580612.jpeg",
+        image: "/vegmenuimage/Cheese Burger.jpg",
         isVeg: true,
         category: "Burgers"
       },
@@ -412,7 +412,7 @@ export const menuData: MenuCategory[] = [
         name: "Spicy Cheese Burger",
         description: "Extra spicy veg patty with melted cheese",
         price: { regular: 90 },
-        image: "https://images.pexels.com/photos/580612/pexels-photo-580612.jpeg",
+        image: "/vegmenuimage/Spicy Cheese Burger.jpg",
         isVeg: true,
         category: "Burgers"
       },
@@ -421,7 +421,7 @@ export const menuData: MenuCategory[] = [
         name: "Paneer Burger",
         description: "Grilled paneer patty with special sauce",
         price: { regular: 100 },
-        image: "https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg",
+        image: "/vegmenuimage/panner burger.jpg",
         isVeg: true,
         category: "Burgers"
       },
@@ -430,7 +430,7 @@ export const menuData: MenuCategory[] = [
         name: "Jain Special Paneer",
         description: "Special paneer burger without onion and garlic",
         price: { regular: 100 },
-        image: "https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg",
+        image: "/vegmenuimage/Jain Special Paneer.jpg",
         isVeg: true,
         category: "Burgers"
       },
@@ -439,7 +439,7 @@ export const menuData: MenuCategory[] = [
         name: "Paneer Tikka Burger",
         description: "Tandoori paneer tikka with mint chutney",
         price: { regular: 120 },
-        image: "https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg",
+        image: "/vegmenuimage/Paneer Tikka Burger.jpg",
         isVeg: true,
         category: "Burgers"
       },
@@ -448,7 +448,7 @@ export const menuData: MenuCategory[] = [
         name: "Spicy Paneer Burger",
         description: "Extra spicy paneer patty with jalapeños",
         price: { regular: 150 },
-        image: "https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg",
+        image: "/vegmenuimage/Spicy Paneer Burger.jpg",
         isVeg: true,
         category: "Burgers"
       },
@@ -457,7 +457,7 @@ export const menuData: MenuCategory[] = [
         name: "Egg Burger",
         description: "Egg patty with fresh veggies and special sauce",
         price: { regular: 70 },
-        image: "/nonvegmenu/bbq.jpg",
+        image: "/nonvegmenu/egg burger.jpg",
         isVeg: false,
         category: "Burgers"
       },
@@ -466,7 +466,7 @@ export const menuData: MenuCategory[] = [
         name: "Classic Chicken Burger",
         description: "Classic chicken patty burger with fresh vegetables",
         price: { regular: 95 },
-        image: "/nonvegmenu/Chicken Crunch.jpg",
+        image: "/nonvegmenu/Classic Chicken Burger.jpg",
         isVeg: false,
         category: "Burgers"
       },
@@ -475,7 +475,7 @@ export const menuData: MenuCategory[] = [
         name: "Chicken Cheese Burger",
         description: "Chicken patty with melted cheese and signature sauce",
         price: { regular: 110 },
-        image: "/nonvegmenu/Chicken Mexican.jpg",
+        image: "/nonvegmenu/Chicken Cheese Burger.jpg",
         isVeg: false,
         category: "Burgers"
       },
@@ -484,7 +484,7 @@ export const menuData: MenuCategory[] = [
         name: "Chicken Spicy Burger",
         description: "Spicy chicken patty with jalapeños and hot sauce",
         price: { regular: 140 },
-        image: "/nonvegmenu/Spicy Chicken.jpg",
+        image: "/nonvegmenu/Chicken Spicy Burger.jpg",
         isVeg: false,
         category: "Burgers"
       }
@@ -546,7 +546,7 @@ export const menuData: MenuCategory[] = [
         name: "Chicken Loaded Wrap",
         description: "Loaded chicken wrap with extra cheese and sauce",
         price: { regular: 180 },
-        image: "/nonvegmenu/Kabab n Chicken.jpg",
+        image: "/nonvegmenu/Chicken Loaded Wrap.jpg",
         isVeg: false,
         category: "Wraps"
       }
@@ -572,7 +572,7 @@ export const menuData: MenuCategory[] = [
         name: "Paneer Parcel",
         description: "Bite-sized crispy paneer parcels",
         price: { regular: 70 },
-        image: "/vegmenuimage/Paneer Popcorn.jpg",
+        image: "/vegmenuimage/paneer parcel.jpg",
         isVeg: true,
         category: "Sides"
       },
@@ -590,7 +590,7 @@ export const menuData: MenuCategory[] = [
         name: "Peri Peri Fries",
         description: "Spicy peri peri seasoned fries",
         price: { regular: 100 },
-        image: "https://images.pexels.com/photos/1893556/pexels-photo-1893556.jpeg",
+        image: "/vegmenuimage/Peri Peri Fries.jpg",
         isVeg: true,
         category: "Sides"
       },
@@ -608,7 +608,7 @@ export const menuData: MenuCategory[] = [
         name: "Cheese Balls (Mini)",
         description: "Deep-fried cheese balls with herbs mini pack",
         price: { regular: 120 },
-        image: "/vegmenuimage/Cheese Balls.jpg",
+        image: "/vegmenuimage/Cheese Balls (Mini).jpg",
         isVeg: true,
         category: "Sides"
       }
@@ -740,7 +740,7 @@ export const menuData: MenuCategory[] = [
         name: "Chocolava Cake",
         description: "Warm chocolate cake with molten center",
         price: { regular: 70 },
-        image: "/vegmenuimage/Chocolate Lava Cake.jpg",
+        image: "/vegmenuimage/Chocolava Cake.jpg",
         isVeg: true,
         category: "Desserts"
       },
@@ -784,7 +784,7 @@ export const menuData: MenuCategory[] = [
         name: "Red Sauce Dip",
         description: "Tangy red sauce dip",
         price: { regular: 20 },
-        image: "/vegmenuimage/Spicy Dip.jpg",
+        image: "/vegmenuimage/Red Sauce Dip.jpg",
         isVeg: true,
         category: "Dips"
       },
@@ -793,7 +793,7 @@ export const menuData: MenuCategory[] = [
         name: "Peri Peri Dip",
         description: "Spicy peri peri dip",
         price: { regular: 20 },
-        image: "/vegmenuimage/Spicy Dip.jpg",
+        image: "/vegmenuimage/Peri Peri Dip.jpg",
         isVeg: true,
         category: "Dips"
       }
@@ -940,7 +940,13 @@ export const getMenuItemImage = (item: MenuItem): string => {
     return "https://images.pexels.com/photos/315755/pexels-photo-315755.jpeg";
   }
 
-  if (image.startsWith("http://") || image.startsWith("https://") || image.startsWith("/")) {
+  if (
+    image.startsWith("http://") || 
+    image.startsWith("https://") || 
+    image.startsWith("/") || 
+    image.startsWith("data:image/") ||
+    image.startsWith("blob:")
+  ) {
     return image;
   }
 

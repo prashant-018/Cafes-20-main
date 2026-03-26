@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Facebook, Instagram, Twitter, MapPin, Phone, Mail } from "lucide-react";
+import { Instagram, MapPin, Phone, Mail } from "lucide-react";
 
 const scrollToSection = (id: string) => {
   const element = document.getElementById(id);
@@ -61,26 +61,6 @@ export function Footer({ showDeveloperCredit = false }: { showDeveloperCredit?: 
               aria-label="Instagram"
             >
               <Instagram className="w-5 h-5" />
-            </motion.a>
-            <motion.a
-              href="https://www.facebook.com/thehimalayanpizza"
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ y: -5, scale: 1.1 }}
-              className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/70 hover:text-primary hover:bg-primary/10 hover:border-primary transition-all duration-300"
-              aria-label="Facebook"
-            >
-              <Facebook className="w-5 h-5" />
-            </motion.a>
-            <motion.a
-              href="https://twitter.com/himalayan_pizza"
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ y: -5, scale: 1.1 }}
-              className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/70 hover:text-primary hover:bg-primary/10 hover:border-primary transition-all duration-300"
-              aria-label="X (Twitter)"
-            >
-              <Twitter className="w-5 h-5" />
             </motion.a>
           </div>
         </div>

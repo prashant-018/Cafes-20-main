@@ -38,14 +38,7 @@ const menuHighlights: MenuHighlight[] = [
     image: "/vegmenuimage/Veggie Pizza.jpeg",
     isVeg: true
   },
-  {
-    id: 4,
-    name: "BBQ Paneer",
-    description: "Smoky BBQ paneer with onions, peppers, and special sauce",
-    price: 529,
-    image: "/nonvegmenu/bbq.jpg",
-    isVeg: true
-  },
+
   {
     id: 6,
     name: "4 Cheese",
