@@ -125,12 +125,17 @@ export const authenticateAdmin = async (req: Request, res: Response, next: NextF
         return;
       }
 
-      // For hardcoded admin, we don't need to fetch from DB
-      if (decoded.id === 'admin-hardcoded') {
+      // Fast-path for env-configured admin tokens.
+      // Older tokens used 'admin-hardcoded', so we keep backward compatibility.
+      const ADMIN_ID = process.env.ADMIN_ID || 'admin-hardcoded';
+      const isLegacyAdmin = decoded.id === 'admin-hardcoded';
+      const isConfiguredAdmin = decoded.id === ADMIN_ID;
+
+      if (isLegacyAdmin || isConfiguredAdmin) {
         req.user = {
-          _id: 'admin-hardcoded',
+          _id: decoded.id,
           role: 'admin',
-          email: 'admin@gmail.com'
+          email: process.env.ADMIN_EMAIL || ''
         } as any;
         next();
         return;

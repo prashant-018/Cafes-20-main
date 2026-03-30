@@ -37,14 +37,12 @@ server/build/
 # Security ke liye GitHub pe nahi hona chahiye
 .env
 .env.*
-.env.local
-.env.development
-.env.production
-.env.test
-client/.env
-server/.env
-# Keep example file for reference
+**/.env
+**/.env.*
+
+# Keep env example files for reference (never secrets)
 !.env.example
+!**/.env.example
 
 # =========================
 # 4️⃣ Uploaded Files (User Generated Content)

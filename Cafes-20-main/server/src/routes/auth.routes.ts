@@ -74,7 +74,7 @@ router.post('/login', loginValidation, login);
 
 /**
  * @route   POST /api/auth/admin/login
- * @desc    Admin login with hardcoded credentials
+ * @desc    Admin login with environment-based credentials
  * @access  Public
  * @body    { email, password }
  */

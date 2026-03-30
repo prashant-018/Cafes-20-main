@@ -7,9 +7,13 @@ const seedAdmin = async () => {
   try {
     await connectDB();
 
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@himalayan-pizza.com';
-    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123456';
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPassword = process.env.ADMIN_PASSWORD;
     const adminName = process.env.ADMIN_NAME || 'Restaurant Admin';
+
+    if (!adminEmail || !adminPassword) {
+      throw new Error('ADMIN_EMAIL and ADMIN_PASSWORD must be set to seed the admin user');
+    }
 
     // Check if admin already exists
     const existingAdmin = await Admin.findOne({ email: adminEmail });
@@ -23,15 +27,14 @@ const seedAdmin = async () => {
       email: adminEmail,
       password: adminPassword,
       name: adminName,
-      role: 'super_admin'
+      role: 'admin'
     });
 
     await admin.save();
 
     console.log('✅ Admin user created successfully');
     console.log(`📧 Email: ${adminEmail}`);
-    console.log(`🔑 Password: ${adminPassword}`);
-    console.log('⚠️  Please change the password after first login');
+    console.log('✅ Admin credentials seeded. Please change the password if needed.');
 
     process.exit(0);
   } catch (error) {

@@ -1,7 +1,51 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import User from '../models/User';
+import { Admin } from '../models/Admin';
 import { signToken } from '../utils/jwt';
+
+const sanitizeEnvCredential = (value?: string): string | undefined => {
+  if (!value) {
+    return undefined;
+  }
+
+  const sanitized = value
+    .replace(/[\r\n\t]/g, '')
+    .replace(/['"]/g, '')
+    .trim();
+
+  return sanitized || undefined;
+};
+
+const sendAdminLoginSuccess = (
+  res: Response,
+  admin: {
+    id: string;
+    email: string;
+    name: string;
+    role: 'admin';
+  }
+): void => {
+  const token = signToken(
+    {
+      id: admin.id,
+      role: 'admin'
+    },
+    '1d'
+  );
+
+  res.status(200).json({
+    success: true,
+    message: 'Admin login successful',
+    token,
+    admin: {
+      id: admin.id,
+      email: admin.email,
+      name: admin.name,
+      role: admin.role
+    }
+  });
+};
 
 /**
  * Register a new user
@@ -181,7 +225,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 };
 
 /**
- * Admin login with hardcoded credentials
+ * Admin login with environment-based credentials
  * POST /api/auth/admin/login
  */
 export const adminLogin = async (req: Request, res: Response): Promise<void> => {
@@ -202,12 +246,25 @@ export const adminLogin = async (req: Request, res: Response): Promise<void> => 
 
     const { email, password } = req.body;
 
-    // Hardcoded admin credentials
-    const ADMIN_EMAIL = 'admin@gmail.com';
-    const ADMIN_PASSWORD = 'prashant123';
+    // Admin credentials must come from environment variables.
+    // This prevents committing secrets into source code.
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+    const ADMIN_ID = process.env.ADMIN_ID || 'admin-hardcoded';
+    const ADMIN_NAME = process.env.ADMIN_NAME || 'Admin';
+
+    if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+      res.status(500).json({
+        success: false,
+        message: 'Admin credentials are not configured on the server'
+      });
+      return;
+    }
+
+    const normalizedEmail = String(email).trim().toLowerCase();
 
     // Validate admin credentials
-    if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
+    if (normalizedEmail !== ADMIN_EMAIL.toLowerCase() || password !== ADMIN_PASSWORD) {
       console.log('❌ Invalid admin credentials for:', email);
       res.status(401).json({
         success: false,
@@ -218,13 +275,13 @@ export const adminLogin = async (req: Request, res: Response): Promise<void> => 
 
     // Generate JWT token with 1 day expiry
     const token = signToken({
-      id: 'admin-hardcoded', // Hardcoded admin ID
+      id: ADMIN_ID,
       role: 'admin'
     }, '1d'); // 1 day expiry for admin tokens
 
     const adminData = {
       email: ADMIN_EMAIL,
-      name: 'Admin',
+      name: ADMIN_NAME,
       role: 'admin'
     };
 
